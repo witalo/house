@@ -38,6 +38,25 @@ class Order(models.Model):
             r=Coalesce(Sum(F('quantity') * F('price')), decimal.Decimal(0.00))).get('r')
         return round(total, 2)
 
+    def save(self, *args, **kwargs):
+        # Llamamos al método save() original para guardar el objeto Order
+        super().save(*args, **kwargs)
+        # Realizar la actualización del otro modelo relacionado aquí
+        room_obj = self.room  # Supongamos que hay una relación llamada 'otro_modelo' en tu modelo Order
+        if room_obj:
+            room_obj.state = self.campo_nuevo_valor
+            room_obj.save()
+
+    def update(self, *args, **kwargs):
+        # Llamamos al método update() original para actualizar el objeto Order
+        super().update(*args, **kwargs)
+
+        # Realizar la actualización del otro modelo relacionado aquí
+        otro_objeto = self.otro_modelo  # Supongamos que hay una relación llamada 'otro_modelo' en tu modelo Order
+        if otro_objeto:
+            otro_objeto.campo_a_actualizar = self.campo_nuevo_valor
+            otro_objeto.save()
+
     class Meta:
         verbose_name = 'Orden'
         verbose_name_plural = 'Ordenes'

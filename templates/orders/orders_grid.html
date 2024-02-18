@@ -17,7 +17,7 @@
     {% for o in order_set %}
         <tr class="text-center small" pk="{{ o.id }}">
             <td class="align-middle p-1 font-weight-bold">{{ o.number }}</td>
-            <td class="align-middle p-1">{{ o.get_status_display }}</td>
+            <td class="align-middle p-1 {% if o.status == 'A' %}text-danger{% elif o.status == 'P' %}text-warning{% else %}text-success{% endif %}">{{ o.get_status_display }}</td>
             <td class="align-middle p-1">
                 {% if o.room %}
                     HABITACION Nº {{ o.room.number }}<br>
@@ -93,10 +93,10 @@
                     </button>
                     <div class="dropdown-menu" role="menu" style="">
                         <a class="dropdown-item" href="#" onclick="CancelOrder({{ o.id }})">Anular</a>
-{#                        <a class="dropdown-item" href="#">Another action</a>#}
-{#                        <a class="dropdown-item" href="#">Something else here</a>#}
-{#                        <div class="dropdown-divider"></div>#}
-{#                        <a class="dropdown-item" href="#">Separated link</a>#}
+                        {#                        <a class="dropdown-item" href="#">Another action</a>#}
+                        {#                        <a class="dropdown-item" href="#">Something else here</a>#}
+                        {#                        <div class="dropdown-divider"></div>#}
+                        {#                        <a class="dropdown-item" href="#">Separated link</a>#}
                     </div>
                 </div>
             </td>

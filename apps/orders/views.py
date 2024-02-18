@@ -99,15 +99,15 @@ def create_order(request):
         user_obj = User.objects.get(id=user)
         subsidiary_obj = user_obj.subsidiary
         order_status = 'P'
-        if room_status == 'D':
-            room_status = 'O'
-        elif room_status == 'M':
-            order_status = 'C'
-        else:
-            order_status = 'P'
         pk = order['order']
         order_obj = None
         if int(pk) > 0:
+            if room_status == 'D':
+                order_status = 'C'
+            elif room_status == 'M':
+                order_status = 'C'
+            else:
+                order_status = 'P'
             pk = int(pk)
             order_obj = Order.objects.get(id=pk)
             order_obj.user = user_obj
@@ -133,12 +133,6 @@ def create_order(request):
                 product = d['product']
                 product_obj = None
                 types = 'P'
-                if product.isdigit():
-                    product_obj = Product.objects.get(id=int(product))
-                    types = 'P'
-                else:
-                    product_obj = None
-                    types = product
                 description = d['description']
                 quantity = d['quantity']
                 if float(quantity) > 0:
@@ -164,6 +158,12 @@ def create_order(request):
                     detail_obj.price = price
                     detail_obj.save()
                 else:
+                    if product.isdigit():
+                        product_obj = Product.objects.get(id=int(product))
+                        types = 'P'
+                    else:
+                        product_obj = None
+                        types = product
                     date_time = d['date']
                     date_time = datetime.strptime(date_time, '%Y/%m/%d %I:%M %p')
                     time = d['time']
@@ -213,7 +213,7 @@ def create_order(request):
             return JsonResponse({
                 'success': True,
                 'order': order_obj.id,
-                'status': order_obj.status,
+                'status': order_obj.room.status,
                 'message': 'Operacion exitosa'
             }, status=HTTPStatus.OK)
         else:
@@ -396,8 +396,9 @@ def create_purchase(request):
             id=pk,
             defaults={
                 "type": types,
-                "number": get_correlative(subsidiary=subsidiary_obj, types=types, order=pk),
+                "number": get_correlative(subsidiary=subsidiary_obj, types=types),
                 "current": date,
+                "date_time": datetime.now(),
                 "user": user_obj,
                 "client": client_obj,
                 "subsidiary": subsidiary_obj,
@@ -479,3 +480,28 @@ def create_purchase(request):
             }, status=HTTPStatus.OK)
     else:
         return JsonResponse({'message': 'Error de peticion.'}, status=HTTPStatus.BAD_REQUEST)
+
+
+def cancel_order(request):
+    if request.method == 'GET':
+        order = request.GET.get('order', '')
+        if int(order) > 0:
+            order_obj = Order.objects.get(id=int(order))
+            order_obj.status = 'A'
+            order_obj.save()
+            for d in OrderDetail.objects.filter(order=order_obj):
+                if d.product:
+                    store_input(detail=d)
+            payment_set = Payments.objects.filter(order=order_obj)
+            for payment in payment_set:
+                payment.status = 'A'
+                payment.save()
+            return JsonResponse({
+                'success': True,
+                'message': 'Orden anulada correctamente'
+            }, status=HTTPStatus.OK)
+        else:
+            return JsonResponse({
+                'success': False,
+                'message': 'Ocurrio un problema en el proceso'
+            }, status=HTTPStatus.OK)

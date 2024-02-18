@@ -126,20 +126,20 @@
                                         <div class="card-header p-1 pt-2">
                                             <div class="row align-items-center">
                                                 <div class="col-sm-12 col-md-4 col-lg-3 align-self-center">
-                                                    <div class="form-group mb-0">
-                                                        <select class="form-control form-control-sm font-weight-bold"
-                                                                id="room_state"
-                                                                name="room_state">
-                                                            {% for s in state_set %}
-                                                                {% if s.0 == room_obj.state.type %}
-                                                                    <option selected
-                                                                            value="{{ s.0 }}">{{ s.1 }}</option>
-                                                                {% else %}
-                                                                    <option value="{{ s.0 }}">{{ s.1 }}</option>
-                                                                {% endif %}
-                                                            {% endfor %}
-                                                        </select>
-                                                    </div>
+{#                                                    <div class="form-group mb-0">#}
+{#                                                        <select class="form-control form-control-sm font-weight-bold"#}
+{#                                                                id="room_state"#}
+{#                                                                name="room_state">#}
+{#                                                            {% for s in state_set %}#}
+{#                                                                {% if s.0 == room_obj.state.type %}#}
+{#                                                                    <option selected#}
+{#                                                                            value="{{ s.0 }}">{{ s.1 }}</option>#}
+{#                                                                {% else %}#}
+{#                                                                    <option value="{{ s.0 }}">{{ s.1 }}</option>#}
+{#                                                                {% endif %}#}
+{#                                                            {% endfor %}#}
+{#                                                        </select>#}
+{#                                                    </div>#}
                                                 </div>
                                                 <div class="col-sm-12 col-md-4 col-lg-5 p-1"></div>
                                                 <div class="col-sm-12 col-md-4 col-lg-4">
@@ -269,7 +269,7 @@
                                                             </td>
                                                             <td class="align-middle mailbox-date item-amount p-1 text-right">{{ d.amount|safe }}</td>
                                                             <td class="align-middle detail-delete p-1 text-center item-delete">
-                                                                <button type="button" class="btn btn-danger rounded" onclick="DeleteRowDetail(1,0, 'R')"><i
+                                                                <button type="button" class="btn btn-danger rounded" onclick="DeleteRowDetail(1,0, 'X')"><i
                                                                         class="fa fa-trash-alt"></i></button>
                                                             </td>
                                                         </tr>

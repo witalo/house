@@ -301,7 +301,8 @@ function CreateOrder() {
         toastr.info('No se especifico la habitacion')
         return false
     }
-    let status = $('#room_state').val()
+    // let status = $('#room_state').val()
+    let status = 'P'
     // if (order === 0 && status === 'D') {
     //     toastr.info('Es necesario cambiar el estado en ocupado, reservado u otra')
     //     return false
@@ -355,6 +356,11 @@ function CreateOrder() {
             return val
         }
         let product = row.attr('product')
+        if (product === 'H') {
+            status = 'P'
+        }else if(product==='X'){
+             status = 'X'
+        }
         if (product === '' || product === undefined) {
             toastr.info('Producto desconocido en la fila ' + i.toString())
             val = false
@@ -928,17 +934,17 @@ $("select#account").on("keyup change", function (e) {
         $('#amount').val('')
     }
 })
-$("#room_state").on("keyup change", function (e) {
-    let val = $(this).val();
-    if (val === 'X') {
-        $('#date').attr('disabled', false)
-        $('#total_refund').attr('disabled', false)
-    } else {
-        $('#date').attr('disabled', true)
-        $('#total_refund').attr('disabled', true)
-        $('#total_refund').val(parseFloat('0.00').toFixed(2))
-    }
-})
+// $("#room_state").on("keyup change", function (e) {
+//     let val = $(this).val();
+//     if (val === 'X') {
+//         $('#date').attr('disabled', false)
+//         $('#total_refund').attr('disabled', false)
+//     } else {
+//         $('#date').attr('disabled', true)
+//         $('#total_refund').attr('disabled', true)
+//         $('#total_refund').val(parseFloat('0.00').toFixed(2))
+//     }
+// })
 $("#total_refund").on("keyup change", function (e) {
     let v = $(this).val();
     if (parseFloat(v) > 0) {

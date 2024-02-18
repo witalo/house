@@ -596,18 +596,25 @@ def ticket_refund(request, pk=None):
     ]
     page_header.setStyle(TableStyle(style_tbl_header))
     line = '-------------------------------------------------------'
-    init = order_obj.init
     init_date = '-'
     init_time = '-'
-    if init:
-        init_date = init.strftime("%d/%m/%Y")
-        init_time = init.strftime('%H:%M:%S')
-    end = order_obj.end
+    if order_obj.date_time:
+        init_date = order_obj.date_time.strftime("%d/%m/%Y")
+        init_time = order_obj.date_time.strftime('%H:%M:%S')
+    order_detail_set = OrderDetail.objects.filter(order=order_obj, type='H')
     end_date = '-'
     end_time = '-'
-    if end:
-        end_date = end.strftime("%d/%m/%Y")
-        end_time = end.strftime('%H:%M:%S')
+    if order_detail_set.exists():
+        order_detail_obj = order_detail_set.first()
+        end_date = order_detail_obj.end.strftime("%d/%m/%Y")
+        end_time = order_detail_obj.end.strftime('%H:%M:%S')
+    order_refund_set = OrderDetail.objects.filter(order=order_obj, type='R')
+    time_refund = '-'
+    refund = []
+    if order_refund_set.exists():
+        order_refund_obj = order_refund_set.first()
+        time_refund = order_refund_obj.time
+        refund = [('TIEMPO REINTEGRO: ', str(time_refund.hour) + ' HORA(S) ' + str(time_refund.minute) + ' MINUTO(S)')]
 
     refund = order_obj.date_refund
     refund_date = '-'

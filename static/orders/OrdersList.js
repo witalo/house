@@ -68,3 +68,27 @@ function TicketRefund(o) {
         });
     }
 }
+
+function CancelOrder(o) {
+    let r = confirm('¿ESTA SEGURO DE ANULAR LA ORDEN?');
+    if (r === true) {
+        $.ajax({
+            url: '/orders/cancel_order/',
+            async: true,
+            dataType: 'json',
+            type: 'GET',
+            data: {'order': o},
+            success: function (r) {
+                if (r.success) {
+                    toastr.success(r.message)
+                    SearchOrders()
+                } else {
+                    toastr.error(r.message)
+                }
+            },
+            error: function (r) {
+                toastr.error('Ocurrio un problema')
+            }
+        });
+    }
+}

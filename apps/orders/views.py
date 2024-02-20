@@ -279,18 +279,25 @@ def get_orders(request):
         if types and init and end:
             try:
                 order_set = Order.objects.filter(current__range=(init, end), type=types)
-                t = loader.get_template('orders/orders_grid.html')
-                c = ({
-                    'order_set': order_set
-                })
-                return JsonResponse({
-                    'success': True,
-                    'grid': t.render(c, request),
-                })
+                if order_set.exists():
+                    t = loader.get_template('orders/orders_grid.html')
+                    c = ({
+                        'order_set': order_set
+                    })
+                    return JsonResponse({
+                        'success': True,
+                        'message': 'Excelente',
+                        'grid': t.render(c, request),
+                    })
+                else:
+                    return JsonResponse({
+                        'success': False,
+                        'message': 'No existe ninguna orden registrada',
+                    })
             except Order.DoesNotExist:
                 return JsonResponse({
                     'success': False,
-                    'message': 'No existe ninguna orden',
+                    'message': 'No existe ninguna orden registrada',
                 })
             except Exception as e:
                 return JsonResponse({

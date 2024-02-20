@@ -1,11 +1,15 @@
+from datetime import datetime, timedelta
 import decimal
 from django.db import models
 from django.db.models import Sum, F
 from django.db.models.functions import Coalesce
 from apps.users.models import User
 from django.utils import timezone
+from django.utils.timezone import make_aware, localtime
+import pytz
 
 now = timezone.now()
+desired_timezone = pytz.timezone('America/Lima')
 
 
 # Create your models here.
@@ -36,6 +40,27 @@ class Order(models.Model):
         total = OrderDetail.objects.filter(order=self).aggregate(
             r=Coalesce(Sum(F('quantity') * F('price')), decimal.Decimal(0.00))).get('r')
         return round(total, 2)
+
+    def get_expired(self):
+        if self.status == 'P' and self.type == 'S' and self.room:
+            detail_set = OrderDetail.objects.filter(type__in=['O', 'X'])
+            if detail_set.exists():
+                final_date = timezone.localtime(self.date_time, timezone=desired_timezone)
+                # Obtener la fecha y hora actual con la zona horaria deseada
+                date_time = datetime.now(desired_timezone)
+                if detail_set.filter(type='X').exists():
+                    refund_obj = detail_set.filter(type='X').first()
+                    final_date = timezone.localtime(refund_obj.end, timezone=desired_timezone)
+                elif detail_set.filter(room=self.room, type='O').exists():
+                    room_obj = detail_set.filter(room=self.room, type='O').first()
+                    final_date = timezone.localtime(room_obj.end, timezone=desired_timezone)
+                else:
+                    final_date = self.date_time
+                return date_time >= final_date
+            else:
+                return False
+        else:
+            return False
 
     def save(self, *args, **kwargs):
         # Llamamos al método save() original para guardar el objeto Order
@@ -73,8 +98,8 @@ class Order(models.Model):
 
 class OrderDetail(models.Model):
     TYPE_CHOICES = (
-        ('H', 'HABITACION'),
-        ('R', 'REINTEGRO'),
+        ('O', 'HABITACION'),
+        ('X', 'REINTEGRO'),
         ('P', 'PRODUCTO'),
         ('A', 'PERSONA ADICIONAL')
     )
@@ -98,6 +123,18 @@ class OrderDetail(models.Model):
     def amount(self):
         amount = round(decimal.Decimal(self.quantity * self.price), 2)
         return amount
+
+    def get_time(self):
+        hours = 0
+        minutes = 0
+        if self.time:
+            total_minutes = self.time.total_seconds() // 60
+            # Calcular las horas y minutos
+            hours = total_minutes // 60
+            minutes = total_minutes % 60
+            return f"{int(hours):02d} HORA(S) Y {int(minutes):02d} MINUTO(S)"
+        else:
+            return f"{int(hours):02d} HORA(S) Y {int(minutes):02d} MINUTO(S)"
 
     class Meta:
         verbose_name = 'Orden Detalle'

@@ -1,106 +1,117 @@
-<table class="table table-sm table-striped">
-    <thead class="bg-primary">
-    <tr class="text-center small">
-        <td class="align-middle">Nº</td>
-        <td class="align-middle">ESTADO</td>
-        <td class="align-middle">HABITACION</td>
-        <td class="align-middle">REINTEGRO</td>
-        <td class="align-middle">FECHA:HORA</td>
-        <td class="align-middle">CLIENTE/PROVEEDOR</td>
-        <td class="align-middle">USUARIO</td>
-        <td class="align-middle">DETALLES/DOCUMENTOS</td>
-        <td class="align-middle">TOTAL</td>
-        <td class="align-middle">OPCION</td>
-    </tr>
-    </thead>
-    <tbody>
-    {% for o in order_set %}
-        <tr class="text-center small" pk="{{ o.id }}">
-            <td class="align-middle p-1 font-weight-bold">{{ o.number }}</td>
-            <td class="align-middle p-1 {% if o.status == 'A' %}text-danger{% elif o.status == 'P' %}text-warning{% else %}text-success{% endif %}">{{ o.get_status_display }}</td>
-            <td class="align-middle p-1">
-                {% if o.room %}
-                    HABITACION Nº {{ o.room.number }}<br>
-                    PRECIO: S/. {{ o.price|safe }}
-                {% else %}
-                    -
-                {% endif %}
-            </td>
-            <td class="align-middle p-1">
-                {% if o.refund %}
-                    HABITACION: Nº {{ o.room.number }}<br>
-                    PRECIO REINTEGRO: S/. {{ o.refund|safe }}
-                {% else %}
-                    -
-                {% endif %}
-            </td>
-            <td class="align-middle p-1">
-                {% if o.type == 'C' or o.type == 'C' %}
-                    {{ o.current }}
-                {% else %}
-                    FI:{{ o.init|date:'d/m/Y h:i A' }}<br>
-                    FT:{{ o.end|date:'d/m/Y h:i A' }}<br>
-                    {% if o.refund %}
-                        FR:{{ o.date_refund|date:'d/m/Y h:i A' }}
-                    {% endif %}
-                {% endif %}
-            </td>
-            <td class="align-middle p-1 text-left text-uppercase">
-                {% if o.client %}
-                    {{ o.client.names }}
-                {% elif o.provider %}
-                    {{ o.provider.names }}
-                {% else %}
-                    {{ o.get_type_display }}
-                {% endif %}
-            </td>
-            <td class="align-middle p-1">
-                <i class="fa fa-male fa-1x"></i>:{{ o.user.username }}
-            </td>
-            <td class="align-middle p-1">
-                {% if o.type == 'C' or o.type == 'C' %}
-                    <table class="table table-hover table-striped">
-                        <tbody>
-                        {% for d in o.orderdetail_set.all %}
-                            <tr>
-                                <td class="align-middle p-1 text-center">{{ forloop.counter }}</td>
-                                <td class="align-middle p-1">
-                                    {% if d.product %}{{ d.product.name }}{% else %}{{ d.description }}{% endif %}</td>
-                                <td class="align-middle p-1 text-right">{{ d.quantity|safe }}</td>
-                                <td class="align-middle p-1 text-right">{{ d.price|safe }}</td>
-                                <td class="align-middle p-1 text-right">{{ d.total|safe }}</td>
-                            </tr>
-                        {% endfor %}
-                        </tbody>
-                    </table>
-                {% else %}
-                    <button type="button" class="btn btn-sm btn-outline-warning" onclick="Ticket({{ o.id }})"><i
-                            class="fa fa-cloud-download-alt"></i> Ticket Habitacion
-                    </button>
-                    <button type="button" class="btn btn-sm btn-outline-warning" onclick="TicketRefund({{ o.id }})"><i
-                            class="fa fa-cloud-download-alt"></i> Ticket Reintegro
-                    </button>
-                {% endif %}
-            </td>
-            <td class="align-middle p-1 text-right font-weight-bold"><span
-                    class="float-left">S/.</span> {{ o.total|safe }}</td>
-            <td class="align-middle p-1">
-                <div class="btn-group">
-                    <button type="button" class="btn btn-success">Opcion</button>
-                    <button type="button" class="btn btn-success dropdown-toggle" data-toggle="dropdown"
-                            aria-expanded="false">
-                        <span class="sr-only">Toggle Dropdown</span>
-                    </button>
-                    <div class="dropdown-menu" role="menu" style="">
-                        <a class="dropdown-item" href="#" onclick="CancelOrder({{ o.id }})">Anular</a>
-                        {#                        <a class="dropdown-item" href="#">Another action</a>#}
-                        {#                        <a class="dropdown-item" href="#">Something else here</a>#}
-                        {#                        <div class="dropdown-divider"></div>#}
-                        {#                        <a class="dropdown-item" href="#">Separated link</a>#}
-                    </div>
-                </div>
-            </td>
+{% if order_set %}
+    <table class="table table-sm table-striped">
+        <thead class="bg-primary">
+        <tr class="text-center small">
+            <td class="align-middle">Nº</td>
+            <td class="align-middle">ESTADO</td>
+            <td class="align-middle">HABITACION</td>
+            <td class="align-middle">FECHA:HORA</td>
+            <td class="align-middle">CLIENTE/PROVEEDOR</td>
+            <td class="align-middle">USUARIO</td>
+            <td class="align-middle">DETALLES/DOCUMENTOS</td>
+            <td class="align-middle">TOTAL</td>
+            <td class="align-middle">OPCION</td>
         </tr>
-    {% endfor %}
-    </tbody>
-</table>
+        </thead>
+        <tbody>
+        {% for o in order_set %}
+            <tr class="text-center small" pk="{{ o.id }}">
+                <td class="align-middle p-1 font-weight-bold">{{ o.number }}</td>
+                <td class="align-middle p-1 {% if o.status == 'A' %}text-danger{% elif o.status == 'P' %}text-warning{% else %}text-success{% endif %}">{{ o.get_status_display }}</td>
+                <td class="align-middle p-1">
+                    {% if o.room %}
+                        HABITACION Nº {{ o.room.number }}
+                    {% else %}
+                        -
+                    {% endif %}
+                </td>
+                <td class="align-middle p-1">
+                    {% if o.type == 'E' %}
+                        FE:{{ o.date_time|date:'d/m/Y h:i A' }}
+                    {% elif o.type == 'S' %}
+                        FS:{{ o.date_time|date:'d/m/Y h:i A' }}
+                    {% else %}
+                        -
+                    {% endif %}
+                </td>
+                <td class="align-middle p-1 text-left text-uppercase">
+                    {% if o.client %}
+                        {{ o.client.names }}
+                    {% elif o.provider %}
+                        {{ o.provider.names }}
+                    {% else %}
+                        {{ o.get_type_display }}
+                    {% endif %}
+                </td>
+                <td class="align-middle p-1">
+                    <i class="fa fa-male fa-1x"></i>:{{ o.user.username }}
+                </td>
+                <td class="align-middle p-1">
+                    {% if o.orderdetail_set %}
+                        <table class="table table-hover table-striped">
+                            <tbody>
+                            {% for d in o.orderdetail_set.all %}
+                                <tr>
+                                    <td class="align-middle p-1 text-center">{{ forloop.counter }}</td>
+                                    <td class="align-middle p-1 text-center">{{ d.get_type_display }}</td>
+                                    <td class="align-middle p-1 text-center">
+                                        {% if d.init and d.end %}
+                                            {{ d.init }}<br>
+                                            {{ d.end }}
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </td>
+                                    <td class="align-middle p-1 text-center">
+                                        {{ d.get_time|safe }}
+                                    </td>
+                                    <td class="align-middle p-1">
+                                        {% if d.product %}{{ d.product.name }}{% else %}
+                                            {{ d.description }}{% endif %}
+                                    </td>
+                                    <td class="align-middle p-1 text-right">{{ d.quantity|safe }}</td>
+                                    <td class="align-middle p-1 text-right">{{ d.price|safe }}</td>
+                                    <td class="align-middle p-1 text-right">{{ d.total|safe }}</td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    {% else %}
+                        <button type="button" class="btn btn-sm btn-outline-warning" onclick="Ticket({{ o.id }})"><i
+                                class="fa fa-cloud-download-alt"></i> Ticket Habitacion
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-warning" onclick="TicketRefund({{ o.id }})">
+                            <i
+                                    class="fa fa-cloud-download-alt"></i> Ticket Reintegro
+                        </button>
+                    {% endif %}
+                </td>
+                <td class="align-middle p-1 text-right font-weight-bold"><span
+                        class="float-left">S/.</span> {{ o.total|safe }}</td>
+                <td class="align-middle p-1">
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-success">Opcion</button>
+                        <button type="button" class="btn btn-success dropdown-toggle" data-toggle="dropdown"
+                                aria-expanded="false">
+                            <span class="sr-only">Toggle Dropdown</span>
+                        </button>
+                        <div class="dropdown-menu" role="menu" style="">
+                            <a class="dropdown-item" href="#" onclick="CancelOrder({{ o.id }})">Anular</a>
+                            {#                        <a class="dropdown-item" href="#">Another action</a>#}
+                            {#                        <a class="dropdown-item" href="#">Something else here</a>#}
+                            {#                        <div class="dropdown-divider"></div>#}
+                            {#                        <a class="dropdown-item" href="#">Separated link</a>#}
+                        </div>
+                    </div>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    <div class="row">
+        <div class="col-md-12 text-center">
+            <p class="text-info">No existe ningun registro</p>
+        </div>
+    </div>
+{% endif %}

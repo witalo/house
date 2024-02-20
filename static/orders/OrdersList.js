@@ -10,7 +10,13 @@ function SearchOrders() {
             type: 'GET',
             data: {'type': type, 'init': init, 'end': end},
             success: function (r) {
-                $('div#orders-grid').empty().html(r.grid);
+                if(r.success){
+                    toastr.success(r.message)
+                    $('div#orders-grid').empty().html(r.grid);
+                }else{
+                    toastr.info(r.message)
+                }
+
             },
             error: function (r) {
                 toastr.error('Ocurrio un problema')

@@ -25,6 +25,18 @@
                             <input type="hidden" value="{% if order %}{{ order.id }}{% endif %}" id="order"
                                    name="order">
                             <div class="float-right">
+                                <select class="form-control form-control-sm font-weight-bold"
+                                        id="room_state" disabled
+                                        name="room_state">
+                                    {% for s in state_set %}
+                                        {% if s.0 == room_obj.state.type %}
+                                            <option selected
+                                                    value="{{ s.0 }}">{{ s.1 }}</option>
+                                        {% else %}
+                                            <option value="{{ s.0 }}">{{ s.1 }}</option>
+                                        {% endif %}
+                                    {% endfor %}
+                                </select>
                                 {#                                <div class="row">#}
                                 {#                                    <div class="col">#}
                                 {#                                        <div class="input-group input-group-sm m-0">#}
@@ -126,20 +138,20 @@
                                         <div class="card-header p-1 pt-2">
                                             <div class="row align-items-center">
                                                 <div class="col-sm-12 col-md-4 col-lg-3 align-self-center">
-{#                                                    <div class="form-group mb-0">#}
-{#                                                        <select class="form-control form-control-sm font-weight-bold"#}
-{#                                                                id="room_state"#}
-{#                                                                name="room_state">#}
-{#                                                            {% for s in state_set %}#}
-{#                                                                {% if s.0 == room_obj.state.type %}#}
-{#                                                                    <option selected#}
-{#                                                                            value="{{ s.0 }}">{{ s.1 }}</option>#}
-{#                                                                {% else %}#}
-{#                                                                    <option value="{{ s.0 }}">{{ s.1 }}</option>#}
-{#                                                                {% endif %}#}
-{#                                                            {% endfor %}#}
-{#                                                        </select>#}
-{#                                                    </div>#}
+                                                    {#                                                    <div class="form-group mb-0">#}
+                                                    {#                                                        <select class="form-control form-control-sm font-weight-bold"#}
+                                                    {#                                                                id="room_state"#}
+                                                    {#                                                                name="room_state">#}
+                                                    {#                                                            {% for s in state_set %}#}
+                                                    {#                                                                {% if s.0 == room_obj.state.type %}#}
+                                                    {#                                                                    <option selected#}
+                                                    {#                                                                            value="{{ s.0 }}">{{ s.1 }}</option>#}
+                                                    {#                                                                {% else %}#}
+                                                    {#                                                                    <option value="{{ s.0 }}">{{ s.1 }}</option>#}
+                                                    {#                                                                {% endif %}#}
+                                                    {#                                                            {% endfor %}#}
+                                                    {#                                                        </select>#}
+                                                    {#                                                    </div>#}
                                                 </div>
                                                 <div class="col-sm-12 col-md-4 col-lg-5 p-1"></div>
                                                 <div class="col-sm-12 col-md-4 col-lg-4">
@@ -218,8 +230,9 @@
                                                     </button>
                                                 </div>
                                                 <div class="btn-group">
-                                                    <button type="button" class="btn btn-outline-primary  btn-sm" data-toggle="modal" data-target="#modal-refund">
-{#                                                            onclick="AddRoomRefundTime({{ room_obj.refund|safe }})">#}
+                                                    <button type="button" class="btn btn-outline-primary  btn-sm"
+                                                            data-toggle="modal" data-target="#modal-refund">
+                                                        {#                                                            onclick="AddRoomRefundTime({{ room_obj.refund|safe }})">#}
                                                         <i class="fa fa-home"></i> REINTEGRO
                                                     </button>
                                                 </div>
@@ -228,12 +241,14 @@
                                                 <table class="table table-hover table-striped">
                                                     <tbody id="order_detail">
                                                     {% for d in order.orderdetail_set.all %}
-                                                        <tr class="p-0" pk="{{ d.id }}" i="{{ forloop.counter }}" time="{{ d.time }}"
+                                                        <tr class="p-0" pk="{{ d.id }}" i="{{ forloop.counter }}"
+                                                            time="{{ d.time }}"
                                                             store="{% if d.store %}{{ d.store.id }}{% else %}0{% endif %}"
                                                             product="{% if d.product %}{{ d.product.id }}{% else %}{{ d.type }}{% endif %}">
                                                             <td class="align-middle item-number p-1 text-center">
                                                                 <div class="icheck-primary">
-                                                                    <input type="checkbox" value="" id="{{ d.id }}">
+                                                                    <input type="checkbox" value="" id="{{ d.id }}"
+                                                                           disabled>
                                                                     <label for="{{ d.id }}"></label>
                                                                 </div>
                                                             </td>
@@ -262,15 +277,16 @@
                                                             </td>
                                                             <td class="align-middle item-price p-1 text-right">
                                                                 {{ d.price|safe }}
-{#                                                                <input type="number"#}
-{#                                                                       class="form-control form-control-sm input-price text-right w-100"#}
-{#                                                                       style="width: 85px;" disabled#}
-{#                                                                       value="{{ d.price|safe }}">#}
+                                                                {#                                                                <input type="number"#}
+                                                                {#                                                                       class="form-control form-control-sm input-price text-right w-100"#}
+                                                                {#                                                                       style="width: 85px;" disabled#}
+                                                                {#                                                                       value="{{ d.price|safe }}">#}
                                                             </td>
                                                             <td class="align-middle mailbox-date item-amount p-1 text-right">{{ d.amount|safe }}</td>
                                                             <td class="align-middle detail-delete p-1 text-center item-delete">
-                                                                <button type="button" class="btn btn-danger rounded" onclick="DeleteRowDetail(1,0, 'X')"><i
-                                                                        class="fa fa-trash-alt"></i></button>
+                                                                <button type="button" class="btn btn-danger rounded"
+                                                                        onclick="DeleteRowDetail(1,0, '{{ d.type }}')">
+                                                                    <i class="fa fa-trash-alt"></i></button>
                                                             </td>
                                                         </tr>
                                                     {% endfor %}
@@ -358,7 +374,7 @@
                                         <input type="text" class="form-control form-control-sm" id="code" name="code"
                                                placeholder="Codigo ..." value="">
                                     </div>
-                                    <div class="form-group mb-0">
+                                    <div class="form-group align-self-center text-center mb-0">
                                         <a class="bs-stepper-circle bg-primary" id="btn-add"
                                            onclick="AddNewPayment()"><i
                                                 class="fa fa-plus-circle"></i></a>
@@ -399,9 +415,20 @@
                                                 </tbody>
                                             </table>
                                         </div>
-                                        <div class="card-footer">
+                                        <div class="card-footer p-2">
                                             <div class="mailbox-controls">
-                                                <button type="button" onclick="CreateOrder()" class="btn btn-primary"><i class="fa fa-database"></i>Registrar</button>
+                                                <button type="button" onclick="CreateOrder()" class="btn btn-success"><i
+                                                        class="fa fa-database"></i> Registrar
+                                                </button>
+                                                {% if order %}
+                                                    <button type="button" onclick="FinishOrder({{ order.id }})"
+                                                            class="btn btn-primary"><i
+                                                            class="fa fa-database"></i> Finalizar
+                                                    </button>
+                                                {% endif %}
+                                                <a type="button" class="btn btn-secondary" id="btn-close"
+                                                   href="{% url 'orders:order' %}"><i
+                                                        class="fa fa-cannabis"></i>Regresar</a>
                                                 <div class="float-right">
                                                     {#                                <label class="text-primary d-xl-inline mb-0">TOTAL PAGO</label>#}
                                                     <div class="input-group input-group-sm mb-0">
@@ -543,7 +570,11 @@
                                     <h3 class="card-title text-uppercase font-weight-bold"><i></i>{{ p.name }}</h3>
                                 </div>
                                 <div class="card-body text-center p-1">
-                                    <img src="{% if p.image %}{{ MEDIA_URL }}{{ p.image }}{% else %} {% static 'admin/images/product.jpeg' %}{% endif %}"
+                                    <img src="
+
+
+
+                                            {% if p.image %}{{ MEDIA_URL }}{{ p.image }}{% else %} {% static 'admin/images/product.jpeg' %}{% endif %}"
                                          class="img-circle img-fluid" width="160" height="160" alt="Imagen">
 
                                 </div>
@@ -583,34 +614,37 @@
     </div>
     <div class="modal fade" id="modal-refund" data-backdrop="static" data-keyboard="false">
         <div class="modal-dialog modal-dialog-centered modal-sm">
-          <div class="modal-content">
-            <div class="modal-header">
-              <h4 class="modal-title">Reintegro habitacion</h4>
-              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-              </button>
-            </div>
-            <div class="modal-body">
-              <p>Reintegro&hellip;</p>
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">Reintegro habitacion</h4>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p>Reintegro&hellip;</p>
                     <div class="form-group">
                         <label class="mb-1">Cantidad de horas adicionales</label>
                         <input type="time" id="modal-time" name="modal-time" value="00:00" class="form-control">
-{#                        <input type="number" step="1" min="1" id="modal-time" name="modal-time" value="1" class="form-control">#}
+                        {#                        <input type="number" step="1" min="1" id="modal-time" name="modal-time" value="1" class="form-control">#}
                     </div>
                     <div class="form-group">
                         <label class="mb-1">Precio reintegro por hora</label>
-                        <input type="number" step="0.01" min="0.00" id="modal-price" name="modal-price" class="form-control" value="{{ room_obj.refund|safe }}" placeholder="0.00">
+                        <input type="number" step="0.01" min="0.00" id="modal-price" name="modal-price"
+                               class="form-control" value="{{ room_obj.refund|safe }}" placeholder="0.00">
                     </div>
+                </div>
+                <div class="modal-footer justify-content-between">
+                    <button type="button" class="btn btn-default" id="btn-close-refund" data-dismiss="modal">Cerrar
+                    </button>
+                    <button type="button" class="btn btn-primary" onclick="AddRoomRefundTime()">Agregar reintegro
+                    </button>
+                </div>
             </div>
-            <div class="modal-footer justify-content-between">
-              <button type="button" class="btn btn-default" id="btn-close-refund" data-dismiss="modal">Cerrar</button>
-              <button type="button" class="btn btn-primary" onclick="AddRoomRefundTime()">Agregar reintegro</button>
-            </div>
-          </div>
-          <!-- /.modal-content -->
+            <!-- /.modal-content -->
         </div>
         <!-- /.modal-dialog -->
-      </div>
+    </div>
 {% endblock body %}
 
 {% block extrajs %}

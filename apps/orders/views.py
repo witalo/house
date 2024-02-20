@@ -18,7 +18,7 @@ from apps.accounts.views import create_payment
 from apps.clients.models import Client
 from apps.orders.models import Order, OrderDetail
 from apps.products.models import Product, ProductStore
-from apps.products.views import store_output, store_input
+from apps.products.views import store_output, store_input, update_store_output
 from apps.rooms.models import RoomGroup, RoomType, Room, RoomState
 from apps.users.models import User
 from house import settings
@@ -102,12 +102,6 @@ def create_order(request):
         pk = order['order']
         order_obj = None
         if int(pk) > 0:
-            if room_status == 'D':
-                order_status = 'C'
-            elif room_status == 'M':
-                order_status = 'C'
-            else:
-                order_status = 'P'
             pk = int(pk)
             order_obj = Order.objects.get(id=pk)
             order_obj.user = user_obj
@@ -154,9 +148,14 @@ def create_order(request):
                 if int(detail) > 0:
                     dk = int(detail)
                     detail_obj = OrderDetail.objects.get(id=dk)
+                    old_quantity = detail_obj.quantity
                     detail_obj.quantity = quantity
+                    detail_obj.old_quantity = quantity
                     detail_obj.price = price
                     detail_obj.save()
+                    if detail_obj:
+                        if detail_obj.product:
+                            update_store_output(detail=detail_obj, quantity=old_quantity)
                 else:
                     if product.isdigit():
                         product_obj = Product.objects.get(id=int(product))
@@ -166,9 +165,13 @@ def create_order(request):
                         types = product
                     date_time = d['date']
                     date_time = datetime.strptime(date_time, '%Y/%m/%d %I:%M %p')
-                    time = d['time']
-                    times = datetime.strptime(time, '%H:%M')
-                    times_timedelta = timedelta(hours=times.hour, minutes=times.minute)
+                    time_str = d['time']
+                    # delta_hour = timedelta(hours=int(time_str.split(':')[0]), minutes=int(time_str.split(':')[1]))
+                    # times = datetime.strptime(time_str, '%H:%M')
+                    # Convierte la cadena a un objeto timedelta
+                    hour, minute = map(int, time_str.split(':'))
+                    time_timedelta = timedelta(hours=hour, minutes=minute)
+
                     detail_obj = OrderDetail.objects.create(
                         order=order_obj,
                         type=types,
@@ -178,9 +181,9 @@ def create_order(request):
                         quantity=quantity,
                         old_quantity=quantity,
                         price=price,
-                        init=date_time if types in ('H', 'R') else None,
-                        end=date_time + times_timedelta if types in ('H', 'R') else None,
-                        time=times if types in ('H', 'R') else None,
+                        init=date_time if types in ('O', 'X', 'R') else None,
+                        end=date_time + time_timedelta if types in ('O', 'X', 'R') else None,
+                        time=time_timedelta if types in ('O', 'X', 'R') else None,
                         store=store_obj
                     )
                     if detail_obj:
@@ -213,7 +216,7 @@ def create_order(request):
             return JsonResponse({
                 'success': True,
                 'order': order_obj.id,
-                'status': order_obj.room.status,
+                'status': room_obj.state.type,
                 'message': 'Operacion exitosa'
             }, status=HTTPStatus.OK)
         else:
@@ -504,4 +507,23 @@ def cancel_order(request):
             return JsonResponse({
                 'success': False,
                 'message': 'Ocurrio un problema en el proceso'
+            }, status=HTTPStatus.OK)
+
+
+@csrf_exempt
+def finish_order(request):
+    if request.method == 'POST':
+        order = request.POST.get('order', '')
+        if int(order) > 0:
+            order_obj = Order.objects.get(id=int(order))
+            order_obj.status = 'C'
+            order_obj.save()
+            return JsonResponse({
+                'success': True,
+                'message': 'Orden finalizada'
+            }, status=HTTPStatus.OK)
+        else:
+            return JsonResponse({
+                'success': False,
+                'message': 'No se logro identificar la orden'
             }, status=HTTPStatus.OK)

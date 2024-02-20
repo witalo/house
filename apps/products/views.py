@@ -250,3 +250,12 @@ def store_output(detail=None):
         new_stock = old_stock - detail.quantity
         store_obj.quantity = new_stock
         store_obj.save()
+
+
+def update_store_output(detail=None, quantity=0):
+    if detail is not None:
+        store_obj = detail.store
+        old_stock = store_obj.quantity
+        new_stock = old_stock - (decimal.Decimal(detail.quantity) - decimal.Decimal(quantity))
+        store_obj.quantity = new_stock
+        store_obj.save()

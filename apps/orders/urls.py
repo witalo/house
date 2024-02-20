@@ -19,4 +19,5 @@ urlpatterns = [
     path('purchase/', login_required(ListPurchase.as_view()), name='purchase'),
     path('create_purchase/', login_required(create_purchase), name='create_purchase'),
     path('cancel_order/', login_required(cancel_order), name='cancel_order'),
+    path('finish_order/', login_required(finish_order), name='finish_order'),
 ]

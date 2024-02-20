@@ -102,8 +102,18 @@ async function AddRowDetail(i, pk, product, name, quantity, price, store, stock,
         '</td>' +
         '</tr>'
     );
+    UpdateState(product)
     CountRow()
     TotalDetail()
+}
+
+function UpdateState(t) {
+    // Definir un conjunto de valores permitidos
+    const allowedValues = new Set(['O', 'X', 'R', 'M']);
+    // Verificar si el valor está en el conjunto permitido
+    if (allowedValues.has(t)) {
+        $('#room_state').val(t);
+    }
 }
 
 function CountRow() {
@@ -156,41 +166,56 @@ function TotalDetail() {
 function DeleteRowDetail(i, pk, product) {
     let rows = $('tbody#order_detail').find("tr[i=" + i + "][pk=" + pk + "][product=" + product + "]")
     if (parseInt(pk) > 0) {
-        let order = $('#id-order').val()
-        if (order != '' && parseInt(pk) > 0) {
-            let r = confirm("¿Esta seguro de eliminar el detalle?")
-            if (r == true) {
-                $.ajax({
-                    url: '/sales/delete_order_detail/',
-                    async: true,
-                    dataType: 'json',
-                    type: 'GET',
-                    data: {'pk': pk, 'o': 'I'},
-                    success: function (response) {
-                        if (response.success) {
-                            rows.remove();
-                            CountRow();
-                            TotalDetail();
-                            toastr.success(response.message)
-                        } else {
-                            toastr.error(response.message)
-                        }
-                    },
-                });
-            }
-        } else {
-            toastr.error('Necesita buscar una orden')
-        }
+        toastr.info('No es posible eliminar ya que se encuentra registrado, si desea anule la orden')
+        // let order = $('#id-order').val()
+        // if (order != '' && parseInt(pk) > 0) {
+        //     let r = confirm("¿Esta seguro de eliminar el detalle?")
+        //     if (r == true) {
+        //         $.ajax({
+        //             url: '/sales/delete_order_detail/',
+        //             async: true,
+        //             dataType: 'json',
+        //             type: 'GET',
+        //             data: {'pk': pk, 'o': 'I'},
+        //             success: function (response) {
+        //                 if (response.success) {
+        //                     rows.remove();
+        //                     CountRow();
+        //                     TotalDetail();
+        //                     toastr.success(response.message)
+        //                 } else {
+        //                     toastr.error(response.message)
+        //                 }
+        //             },
+        //         });
+        //     }
+        // } else {
+        //     toastr.error('Necesita buscar una orden')
+        // }
     } else {
+        DeleteStateRoom(product)
         rows.remove();
         CountRow();
         TotalDetail();
     }
 }
 
+function DeleteStateRoom(s) {
+    if (s === 'O' || s === 'R' || s === 'M') {
+        $('#room_state').val('D');
+    } else if (s === 'X') {
+        if ($("tbody#order_detail tr[product=O]").length > 0) {
+            $('#room_state').val('O');
+        } else {
+            $('#room_state').val('D');
+        }
+    }
+}
+
 function DeleteRowCheck() {
     $('tbody#order_detail tr').each(function () {
         if ($(this).find('td.item-number div.icheck-primary input.input-number').is(':checked')) {
+            DeleteStateRoom($(this).attr('product'))
             $(this).remove()
         }
     });
@@ -288,6 +313,7 @@ function CreateOrder() {
     minutos = (minutos < 10) ? '0' + minutos : minutos;
     // Construye la cadena de fecha y hora en el formato deseado
     var fechaHoraFormateada = `${año}/${mes}/${dia} ${horas}:${minutos} ${periodo}`;
+    console.log("Fecha y hora:", fechaHoraFormateada)
     let order = $('#order').val()
     if (parseInt(order) > 0) {
         order = parseInt(order)
@@ -301,12 +327,11 @@ function CreateOrder() {
         toastr.info('No se especifico la habitacion')
         return false
     }
-    // let status = $('#room_state').val()
-    let status = 'P'
-    // if (order === 0 && status === 'D') {
-    //     toastr.info('Es necesario cambiar el estado en ocupado, reservado u otra')
-    //     return false
-    // }
+    let status = $('#room_state').val()
+    if (order === 0 && status === 'D') {
+        toastr.info('Es necesario cambiar el estado en ocupado, reservado u otra')
+        return false
+    }
     let client = $('#client').val()
     if (parseInt(client) > 0) {
         client = parseInt(client)
@@ -356,11 +381,6 @@ function CreateOrder() {
             return val
         }
         let product = row.attr('product')
-        if (product === 'H') {
-            status = 'P'
-        }else if(product==='X'){
-             status = 'X'
-        }
         if (product === '' || product === undefined) {
             toastr.info('Producto desconocido en la fila ' + i.toString())
             val = false
@@ -385,19 +405,6 @@ function CreateOrder() {
             val = false
             return val
         }
-        var datecurrent = new Date();
-        // Obtiene los componentes de la fecha y hora
-        var day = datecurrent.getDate();
-        var month = datecurrent.getMonth() + 1; // Los meses en JavaScript van de 0 a 11
-        var year = datecurrent.getFullYear();
-        var hour = datecurrent.getHours();
-        var minute = datecurrent.getMinutes();
-        var period = (horas >= 12) ? 'PM' : 'AM';
-        day = (day < 10) ? '0' + day : day;
-        month = (month < 10) ? '0' + month : month;
-        hour = (hour % 12 || 12);
-        minute = (minute < 10) ? '0' + minute : minute;
-        var date_time = `${year}/${month}/${day} ${hour}:${minute} ${period}`;
 
         let Detail = {
             "detail": pk,
@@ -406,7 +413,7 @@ function CreateOrder() {
             "quantity": parseFloat(quantity).toFixed(2),
             "price": parseFloat(price).toFixed(2),
             "store": parseInt(store),
-            "date": date_time,
+            "date": fechaHoraFormateada,
             "time": time
         };
         Order.Detail.push(Detail);
@@ -449,7 +456,7 @@ function CreateOrder() {
 }
 
 function SendOrder(object) {
-    let r = confirm('¿ESTA SEGURO DE PROCEDER CON LA ORDEN?');
+    let r = confirm('¿ESTA SEGURO DE GUARDAR LA ORDEN?');
     if (r === true) {
         $.ajax({
             url: '/orders/create_order/',
@@ -494,7 +501,7 @@ function AddNewRow(p) {
         data: {'pk': p},
         success: function (r) {
             if (r.success) {
-                AddRowDetail(0, 0, p, r.code, r.name, 1, r.price, r.store.id, r.store.quantity)
+                AddRowDetail(0, 0, p, r.name, 1, r.price, r.store.id, r.store.quantity, '00:00')
             } else {
                 toastr.error(r.message)
             }
@@ -738,12 +745,13 @@ function PrintOrderRefund(o) {
 }
 
 function AddRoomTime(t, v) {
+    let s = 'O'
     if (parseFloat(v) > 0) {
-        if ($("tbody#order_detail tr[product=H]").length > 0) {
+        if ($("tbody#order_detail tr[product=" + s + "]").length > 0) {
             toastr.info('El detalle ya se encuentra añadido')
             return false
         } else {
-            AddRowDetail(0, 0, "H", 'HABITACION', 1, v, 0, 1, t)
+            AddRowDetail(0, 0, s, 'HABITACION', 1, v, 0, 1, t)
         }
 
     } else {
@@ -752,18 +760,23 @@ function AddRoomTime(t, v) {
 }
 
 function AddRoomRefundTime() {
-    let time = $('#modal-time').val()
-    let price = $('#modal-price').val()
-    if (parseFloat(price) > 0) {
-        if ($("tbody#order_detail tr[product=R]").length > 0) {
-            toastr.info('El detalle ya se encuentra añadido')
-            return false
+    if ($("tbody#order_detail tr[product=O]").length > 0) {
+        let time = $('#modal-time').val()
+        let price = $('#modal-price').val()
+        let s = 'X'
+        if (parseFloat(price) > 0) {
+            if ($("tbody#order_detail tr[product=" + s + "]").length > 0) {
+                toastr.info('El detalle ya se encuentra añadido')
+                return false
+            } else {
+                AddRowDetail(0, 0, s, 'REINTEGRO HABITACION', 1, price, 0, 1, time)
+            }
+            $('#btn-close-refund').trigger('click')
         } else {
-            AddRowDetail(0, 0, "R", 'REINTEGRO HABITACION', 1, price, 0,1, time)
+            toastr.info('Ingrese el precio adicional')
         }
-        $('#btn-close-refund').trigger('click')
     } else {
-        toastr.info('Ingrese el precio adicional')
+        toastr.info('Antes de realizar un reintegro necesita ocupar la habitacion')
     }
 }
 
@@ -983,3 +996,32 @@ function debounce(fn, threshold) {
         timeout = setTimeout(delayed, threshold);
     };
 };
+
+function FinishOrder(o) {
+    if (parseInt(o) > 0) {
+        let r = confirm('¿Esta seguro de finalizar la orden?, una vez aceptado se liberara la habitacion');
+        if (r === true) {
+            $.ajax({
+                url: '/orders/finish_order/',
+                dataType: 'json',
+                type: 'POST',
+                data: {'order': o},
+                success: function (response) {
+                    if (response.success) {
+                        toastr.success(response.message)
+                        $('#btn-close').trigger('click')
+                    } else {
+                        toastr.error(response.message)
+                    }
+                },
+                error: function (jqXhr, textStatus, xhr) {
+                    if (jqXhr.status === 500) {
+                        toastr.error(jqXhr.responseJSON.error);
+                    }
+                }
+            });
+        }
+    } else {
+        toastr.warning('Necesita registrar la orden antes de finalizarlo')
+    }
+}

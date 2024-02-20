@@ -1,7 +1,9 @@
 from reportlab.lib.colors import Color, black
 from reportlab.lib.pagesizes import letter, landscape, A4, A5, C7
 from reportlab.pdfgen import canvas
-
+from django.utils import timezone
+import pytz
+from django.utils.timezone import make_aware
 from .models import Order, OrderDetail
 from .number_letters import numero_a_moneda
 import io
@@ -336,8 +338,10 @@ def tickets(request, pk=None):
 
 
 def ticket(request, pk=None):
+    desired_timezone = pytz.timezone('America/Lima')
     _wt = 3.14 * inch - 8 * 0.05 * inch
     order_obj = Order.objects.get(pk=pk)
+    room_obj = order_obj.room
     client_obj = order_obj.client
     client_document = ""
     client_name = ""
@@ -377,22 +381,27 @@ def ticket(request, pk=None):
     init_date = '-'
     init_time = '-'
     if order_obj.date_time:
-        init_date = order_obj.date_time.strftime("%d/%m/%Y")
-        init_time = order_obj.date_time.strftime('%H:%M:%S')
-    order_detail_set = OrderDetail.objects.filter(order=order_obj, type='H')
+        localized_date_time = timezone.localtime(order_obj.date_time, timezone=desired_timezone)
+        init_date = localized_date_time.strftime("%d/%m/%Y")
+        init_time = localized_date_time.strftime('%H:%M:%S')
+    order_detail_set = OrderDetail.objects.filter(order=order_obj, type='O')
     end_date = '-'
     end_time = '-'
     if order_detail_set.exists():
         order_detail_obj = order_detail_set.first()
-        end_date = order_detail_obj.end.strftime("%d/%m/%Y")
-        end_time = order_detail_obj.end.strftime('%H:%M:%S')
-    order_refund_set = OrderDetail.objects.filter(order=order_obj, type='R')
+        localized_detail = timezone.localtime(order_detail_obj.end, timezone=desired_timezone)
+        end_date = localized_detail.strftime("%d/%m/%Y")
+        end_time = localized_detail.strftime('%H:%M:%S')
+    order_refund_set = OrderDetail.objects.filter(order=order_obj, type='X')
     time_refund = '-'
     refund = []
     if order_refund_set.exists():
         order_refund_obj = order_refund_set.first()
-        time_refund = order_refund_obj.time
-        refund = [('TIEMPO REINTEGRO: ', str(time_refund.hour) + ' HORA(S) ' + str(time_refund.minute)+' MINUTO(S)')]
+        total_minutes = order_refund_obj.time.total_seconds() // 60
+        # Calcular las horas y minutos
+        hours = total_minutes // 60
+        minute = total_minutes % 60
+        refund = [('TIEMPO REINTEGRO: ', f"{int(hours)} HORA(S) Y {int(minute):02d} MINUTO(S)")]
 
     style_tbl_client = [
         ('FONTNAME', (0, 0), (-1, -1), 'Square'),  # all columns
@@ -410,6 +419,7 @@ def ticket(request, pk=None):
             [('RAZÓN SOCIAL: ', Paragraph(client_name.upper(), styles["Justify"]))] +
             [('DIRECCIÓN: ', Paragraph(client_address.upper(), styles["Justify"]))] +
             [('TELEFONO: ', Paragraph(client_phone, styles["Justify"]))] +
+            [('NRO HABITACION: ', room_obj.number)] +
             [('ATENDIDO POR: ', order_obj.user.username.upper())] +
             [('FECHA INICIO: ', init_date + '  HORA: ' + init_time)] +
             [('FECHA TERMINO: ', end_date + '  HORA: ' + end_time)] +
@@ -420,6 +430,7 @@ def ticket(request, pk=None):
         page_client = Table(
             [('Nº DOCUMENTO ', client_document)] +
             [('SR(A): ', Paragraph(client_name.upper(), styles["Left"]))] +
+            [('NRO HABITACION: ', room_obj.number)] +
             [('ATENDIDO POR: ', order_obj.user.username.upper())] +
             [('FECHA INICIO: ', init_date + '  HORA: ' + init_time)] +
             [('FECHA TERMINO: ', end_date + '  HORA: ' + end_time)] +
@@ -542,7 +553,7 @@ def ticket(request, pk=None):
                             leftMargin=ml,
                             topMargin=ms,
                             bottomMargin=mi,
-                            title=str(order_obj.number)
+                            title=str(subsidiary_obj.serial) + ' - ' + str(str(order_obj.number).zfill(10))
                             )
     doc.build(pdf)
     # doc.build(elements)
@@ -559,8 +570,11 @@ def ticket(request, pk=None):
 
 
 def ticket_refund(request, pk=None):
+    # Obtén la zona horaria deseada (por ejemplo, 'America/New_York')
+    desired_timezone = pytz.timezone('America/Lima')
     _wt = 3.14 * inch - 8 * 0.05 * inch
     order_obj = Order.objects.get(pk=pk)
+    room_obj = order_obj.room
     client_obj = order_obj.client
     client_document = ""
     client_name = ""
@@ -599,30 +613,36 @@ def ticket_refund(request, pk=None):
     init_date = '-'
     init_time = '-'
     if order_obj.date_time:
-        init_date = order_obj.date_time.strftime("%d/%m/%Y")
-        init_time = order_obj.date_time.strftime('%H:%M:%S')
-    order_detail_set = OrderDetail.objects.filter(order=order_obj, type='H')
+        # Ajusta la fecha y hora a la zona horaria deseada
+        localized_date_time = timezone.localtime(order_obj.date_time, timezone=desired_timezone)
+        # Formatea la hora como una cadena
+        init_time = localized_date_time.strftime('%H:%M:%S')
+        init_date = localized_date_time.strftime("%d/%m/%Y")
+    order_detail_set = OrderDetail.objects.filter(order=order_obj, type='O')
     end_date = '-'
     end_time = '-'
     if order_detail_set.exists():
         order_detail_obj = order_detail_set.first()
-        end_date = order_detail_obj.end.strftime("%d/%m/%Y")
-        end_time = order_detail_obj.end.strftime('%H:%M:%S')
-    order_refund_set = OrderDetail.objects.filter(order=order_obj, type='R')
-    time_refund = '-'
+        localized_detail = timezone.localtime(order_detail_obj.end, timezone=desired_timezone)
+        end_date = localized_detail.strftime("%d/%m/%Y")
+        end_time = localized_detail.strftime('%H:%M:%S')
+    order_refund_set = OrderDetail.objects.filter(order=order_obj, type='X')
     refund = []
     if order_refund_set.exists():
         order_refund_obj = order_refund_set.first()
-        time_refund = order_refund_obj.time
-        refund = [('TIEMPO REINTEGRO: ', str(time_refund.hour) + ' HORA(S) ' + str(time_refund.minute) + ' MINUTO(S)')]
-
-    refund = order_obj.date_refund
-    refund_date = '-'
-    refund_time = '-'
-    if refund:
-        refund_date = refund.strftime("%d/%m/%Y")
-        refund_time = refund.strftime('%H:%M:%S')
-
+        # date_refund = order_refund_obj.end
+        # days = order_refund_obj.time.days
+        # hours, remainder = divmod(order_refund_obj.time.seconds, 3600)
+        # minutes = remainder // 60
+        # # Convertir a horas y minutos totales
+        # total_hours = days * 24 + hours
+        # total_minutes = total_hours * 60 + minutes
+        # Obtener la cantidad total de minutos
+        total_minutes = order_refund_obj.time.total_seconds() // 60
+        # Calcular las horas y minutos
+        hours = total_minutes // 60
+        minute = total_minutes % 60
+        refund = [('TIEMPO REINTEGRO: ', f"{int(hours)} HORA(S) Y {int(minute):02d} MINUTO(S)")]
     style_tbl_client = [
         ('FONTNAME', (0, 0), (-1, -1), 'Square'),  # all columns
         # ('GRID', (0, 0), (-1, -1), 0.5, colors.black),  # all columns
@@ -639,20 +659,22 @@ def ticket_refund(request, pk=None):
             [('RAZÓN SOCIAL: ', Paragraph(client_name.upper(), styles["Justify"]))] +
             [('DIRECCIÓN: ', Paragraph(client_address.upper(), styles["Justify"]))] +
             [('TELEFONO: ', Paragraph(client_phone, styles["Justify"]))] +
+            [('NRO HABITACION: ', room_obj.number)] +
             [('ATENDIDO POR: ', order_obj.user.username.upper())] +
             [('FECHA INICIO: ', init_date + '  HORA: ' + init_time)] +
             [('FECHA TERMINO: ', end_date + '  HORA: ' + end_time)] +
-            [('FECHA REINTEGRO: ', refund_date + '  HORA: ' + refund_time)],
+            refund,
             colWidths=[_wt * 30 / 100, _wt * 70 / 100])
         page_client.setStyle(TableStyle(style_tbl_client))
     elif len(client_document) != 11:
         page_client = Table(
             [('Nº DOCUMENTO ', client_document)] +
             [('SR(A): ', Paragraph(client_name.upper(), styles["Left"]))] +
+            [('NRO HABITACION: ', room_obj.number)] +
             [('ATENDIDO POR: ', order_obj.user.username.upper())] +
             [('FECHA INICIO: ', init_date + '  HORA: ' + init_time)] +
             [('FECHA TERMINO: ', end_date + '  HORA: ' + end_time)] +
-            [('FECHA REINTEGRO: ', refund_date + '  HORA: ' + refund_time)],
+            refund,
             colWidths=[_wt * 30 / 100, _wt * 70 / 100])
         page_client.setStyle(TableStyle(style_tbl_client))
     # ---------------------------------------DETALLE---------------------------------------------
@@ -675,23 +697,20 @@ def ticket_refund(request, pk=None):
     room_obj = order_obj.room
     rows = []
     total = round(decimal.Decimal(0.00), 2)
-    if order_obj.refund:
-        room_product = 'REINTEGRO HABITACION Nº ' + str(room_obj.number)
-        rows.append(
-            (str(round(decimal.Decimal(1.00), 2)), Paragraph(str(room_product), styles["Justify"]),
-             str(round(decimal.Decimal(order_obj.refund), 2)),
-             str(round(decimal.Decimal(order_obj.refund), 2))))
-        page_detail = Table(rows, colWidths=[_wt * 10 / 100, _wt * 60 / 100, _wt * 15 / 100, _wt * 15 / 100])
-        page_detail.setStyle(TableStyle(style_tbl_detail))
-        total = round(decimal.Decimal(order_obj.refund), 2)
-    else:
-        room_product = 'SIN REINTEGRO DE HABITACION Nº ' + str(room_obj.number)
-        rows.append(
-            (str('-'), Paragraph(str(room_product), styles["Justify"]),
-             str(round(decimal.Decimal(0.00), 2)),
-             str(round(decimal.Decimal(0.00), 2))))
-        page_detail = Table(rows, colWidths=[_wt * 10 / 100, _wt * 60 / 100, _wt * 15 / 100, _wt * 15 / 100])
-        page_detail.setStyle(TableStyle(style_tbl_detail))
+    counter = 0
+    for d in order_obj.orderdetail_set.filter(type='X'):
+        if d.product:
+            product = Paragraph(str(d.product.name), styles["Justify"])
+        else:
+            product = Paragraph(str(d.description).upper(), styles["Justify"])
+        rows.append((str(decimal.Decimal(round(d.quantity, 2))), product, str(round(decimal.Decimal(d.price), 2)),
+                     str(round(decimal.Decimal(d.quantity * d.price), 2))))
+        amount = decimal.Decimal(d.quantity * d.price)
+        total = total + amount
+        counter = counter + 1
+
+    page_detail = Table(rows, colWidths=[_wt * 10 / 100, _wt * 60 / 100, _wt * 15 / 100, _wt * 15 / 100])
+    page_detail.setStyle(TableStyle(style_tbl_detail))
 
     style_tbl_total = [
         ('FONTNAME', (0, 0), (-1, -1), 'Square-Bold'),
@@ -774,7 +793,7 @@ def ticket_refund(request, pk=None):
                             leftMargin=ml,
                             topMargin=ms,
                             bottomMargin=mi,
-                            title=str(order_obj.number)
+                            title=str(subsidiary_obj.serial) + ' - ' + str(str(order_obj.number).zfill(10))
                             )
     doc.build(pdf)
     # doc.build(elements)

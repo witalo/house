@@ -2,7 +2,6 @@ import decimal
 from django.db import models
 from django.db.models import Sum, F
 from django.db.models.functions import Coalesce
-
 from apps.users.models import User
 from django.utils import timezone
 
@@ -42,20 +41,26 @@ class Order(models.Model):
         # Llamamos al método save() original para guardar el objeto Order
         super().save(*args, **kwargs)
         # Realizar la actualización del otro modelo relacionado aquí
-        room_obj = self.room  # Supongamos que hay una relación llamada 'otro_modelo' en tu modelo Order
+        room_obj = self.room
         if room_obj:
-            room_obj.state = self.campo_nuevo_valor
-            room_obj.save()
+            if self.status == 'C':
+                from apps.rooms.models import RoomState
+                room_state_set = RoomState.objects.filter(type='D')
+                if room_state_set.exists():
+                    room_state_obj = room_state_set.first()
+                    room_obj.state = room_state_obj
+                    room_obj.save()
 
-    def update(self, *args, **kwargs):
-        # Llamamos al método update() original para actualizar el objeto Order
-        super().update(*args, **kwargs)
-
-        # Realizar la actualización del otro modelo relacionado aquí
-        otro_objeto = self.otro_modelo  # Supongamos que hay una relación llamada 'otro_modelo' en tu modelo Order
-        if otro_objeto:
-            otro_objeto.campo_a_actualizar = self.campo_nuevo_valor
-            otro_objeto.save()
+    # def update(self, *args, **kwargs):
+    #     # Llamamos al método update() original para actualizar el objeto Order
+    #     super().update(*args, **kwargs)
+    #
+    #     # Realizar la actualización del otro modelo relacionado aquí
+    #     room_obj = self.room
+    #     if room_obj:
+    #         if self.status == 'C':
+    #             room_obj.state.type = 'D'
+    #             room_obj.save()
 
     class Meta:
         verbose_name = 'Orden'
@@ -88,7 +93,7 @@ class OrderDetail(models.Model):
     update_at = models.DateTimeField(auto_now=True, null=True, blank=True)
     init = models.DateTimeField(null=True, blank=True)
     end = models.DateTimeField(null=True, blank=True)
-    time = models.TimeField(null=True, blank=True)
+    time = models.DurationField(null=True, blank=True)
 
     def amount(self):
         amount = round(decimal.Decimal(self.quantity * self.price), 2)

@@ -8,7 +8,14 @@
             <td class="align-middle">FECHA:HORA</td>
             <td class="align-middle">CLIENTE/PROVEEDOR</td>
             <td class="align-middle">USUARIO</td>
-            <td class="align-middle">DETALLES/DOCUMENTOS</td>
+            <td class="align-middle">Nº</td>
+            {#            <td class="align-middle">TIPO</td>#}
+            <td class="align-middle">FECHA</td>
+            <td class="align-middle">TIEMPO</td>
+            <td class="align-middle">DESCRIPCION</td>
+            <td class="align-middle">CANTIDAD</td>
+            <td class="align-middle">PRECIO</td>
+            <td class="align-middle">SUBTOTAL</td>
             <td class="align-middle">TOTAL</td>
             <td class="align-middle">OPCION</td>
         </tr>
@@ -16,16 +23,18 @@
         <tbody>
         {% for o in order_set %}
             <tr class="text-center small" pk="{{ o.id }}">
-                <td class="align-middle p-1 font-weight-bold">{{ o.number }}</td>
-                <td class="align-middle p-1 {% if o.status == 'A' %}text-danger{% elif o.status == 'P' %}text-warning{% else %}text-success{% endif %}">{{ o.get_status_display }}</td>
-                <td class="align-middle p-1">
+                <td class="align-middle p-1 font-weight-bold"
+                    rowspan="{{ o.orderdetail_set.count }}">{{ o.number }}</td>
+                <td class="align-middle p-1 {% if o.status == 'A' %}text-danger{% elif o.status == 'P' %}text-warning{% else %}text-success{% endif %}"
+                    rowspan="{{ o.orderdetail_set.count }}">{{ o.get_status_display }}</td>
+                <td class="align-middle p-1" rowspan="{{ o.orderdetail_set.count }}">
                     {% if o.room %}
                         HABITACION Nº {{ o.room.number }}
                     {% else %}
                         -
                     {% endif %}
                 </td>
-                <td class="align-middle p-1">
+                <td class="align-middle p-1" rowspan="{{ o.orderdetail_set.count }}">
                     {% if o.type == 'E' %}
                         FE:{{ o.date_time|date:'d/m/Y h:i A' }}
                     {% elif o.type == 'S' %}
@@ -34,7 +43,7 @@
                         -
                     {% endif %}
                 </td>
-                <td class="align-middle p-1 text-left text-uppercase">
+                <td class="align-middle p-1 text-left text-uppercase" rowspan="{{ o.orderdetail_set.count }}">
                     {% if o.client %}
                         {{ o.client.names }}
                     {% elif o.provider %}
@@ -43,52 +52,12 @@
                         {{ o.get_type_display }}
                     {% endif %}
                 </td>
-                <td class="align-middle p-1">
+                <td class="align-middle p-1" rowspan="{{ o.orderdetail_set.count }}">
                     <i class="fa fa-male fa-1x"></i>:{{ o.user.username }}
                 </td>
-                <td class="align-middle p-1">
-                    {% if o.orderdetail_set %}
-                        <table class="table table-hover table-striped">
-                            <tbody>
-                            {% for d in o.orderdetail_set.all %}
-                                <tr>
-                                    <td class="align-middle p-1 text-center">{{ forloop.counter }}</td>
-                                    <td class="align-middle p-1 text-center">{{ d.get_type_display }}</td>
-                                    <td class="align-middle p-1 text-center">
-                                        {% if d.init and d.end %}
-                                            {{ d.init }}<br>
-                                            {{ d.end }}
-                                        {% else %}
-                                            -
-                                        {% endif %}
-                                    </td>
-                                    <td class="align-middle p-1 text-center">
-                                        {{ d.get_time|safe }}
-                                    </td>
-                                    <td class="align-middle p-1">
-                                        {% if d.product %}{{ d.product.name }}{% else %}
-                                            {{ d.description }}{% endif %}
-                                    </td>
-                                    <td class="align-middle p-1 text-right">{{ d.quantity|safe }}</td>
-                                    <td class="align-middle p-1 text-right">{{ d.price|safe }}</td>
-                                    <td class="align-middle p-1 text-right">{{ d.total|safe }}</td>
-                                </tr>
-                            {% endfor %}
-                            </tbody>
-                        </table>
-                    {% else %}
-                        <button type="button" class="btn btn-sm btn-outline-warning" onclick="Ticket({{ o.id }})"><i
-                                class="fa fa-cloud-download-alt"></i> Ticket Habitacion
-                        </button>
-                        <button type="button" class="btn btn-sm btn-outline-warning" onclick="TicketRefund({{ o.id }})">
-                            <i
-                                    class="fa fa-cloud-download-alt"></i> Ticket Reintegro
-                        </button>
-                    {% endif %}
-                </td>
-                <td class="align-middle p-1 text-right font-weight-bold"><span
+                <td class="align-middle p-1 text-right font-weight-bold" rowspan="{{ o.orderdetail_set.count }}"><span
                         class="float-left">S/.</span> {{ o.total|safe }}</td>
-                <td class="align-middle p-1">
+                <td class="align-middle p-1" rowspan="{{ o.orderdetail_set.count }}">
                     <div class="btn-group">
                         <button type="button" class="btn btn-success">Opcion</button>
                         <button type="button" class="btn btn-success dropdown-toggle" data-toggle="dropdown"
@@ -104,7 +73,51 @@
                         </div>
                     </div>
                 </td>
-            </tr>
+                {#                <td class="align-middle p-1">#}
+                {#                    {% if o.orderdetail_set %}#}
+                {#                        <table class="table table-hover table-striped">#}
+                {#                            <tbody>#}
+                {% for d in o.orderdetail_set.all %}
+                    {% if not forloop.first %}
+                        <tr>
+                    {% endif %}
+                {#                                <tr>#}
+                <td class="align-middle p-1 text-center">{{ forloop.counter }}</td>
+                {#                        <td class="align-middle p-1 text-center">{{ d.get_type_display }}</td>#}
+                <td class="align-middle p-1 text-center">
+                    {% if d.init and d.end %}
+                        {{ d.init }}<br>
+                        {{ d.end }}
+                    {% else %}
+                        -
+                    {% endif %}
+                </td>
+                <td class="align-middle p-1 text-center">
+                    {{ d.get_time|safe }}
+                </td>
+                <td class="align-middle p-1">
+                    {% if d.product %}{{ d.product.name }}{% else %}
+                        {{ d.description }}{% endif %}
+                </td>
+                <td class="align-middle p-1 text-right">{{ d.quantity|safe }}</td>
+                <td class="align-middle p-1 text-right">{{ d.price|safe }}</td>
+                <td class="align-middle p-1 text-right">{{ d.amount|safe }}</td>
+                </tr>
+                {% endfor %}
+            {#                            </tbody>#}
+            {#                        </table>#}
+            {#                    {% else %}#}
+            {#                        <button type="button" class="btn btn-sm btn-outline-warning" onclick="Ticket({{ o.id }})"><i#}
+            {#                                class="fa fa-cloud-download-alt"></i> Ticket Habitacion#}
+            {#                        </button>#}
+            {#                        <button type="button" class="btn btn-sm btn-outline-warning" onclick="TicketRefund({{ o.id }})">#}
+            {#                            <i#}
+            {#                                    class="fa fa-cloud-download-alt"></i> Ticket Reintegro#}
+            {#                        </button>#}
+            {#                    {% endif %}#}
+            {#            </td>#}
+
+{#            </tr>#}
         {% endfor %}
         </tbody>
     </table>

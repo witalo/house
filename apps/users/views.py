@@ -128,7 +128,7 @@ def modal_user_permission(request):
             l = {'pk': g.id, 'group_name': g.name, 'status': val}
             group_user_set.append(l)
         # user_group_set = User.groups.filter(name=group_obj.name).exists()
-        t = loader.get_template('users/modal_permission_user.html')
+        t = loader.get_template('users/user_permission.html')
         c = ({
             'group_user_set': group_user_set,
             'user_obj': user_obj

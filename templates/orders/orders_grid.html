@@ -8,6 +8,8 @@
             <td class="align-middle">FECHA:HORA</td>
             <td class="align-middle">CLIENTE/PROVEEDOR</td>
             <td class="align-middle">USUARIO</td>
+            <td class="align-middle">TOTAL</td>
+            <td class="align-middle">OPCION</td>
             <td class="align-middle">Nº</td>
             {#            <td class="align-middle">TIPO</td>#}
             <td class="align-middle">FECHA</td>
@@ -16,8 +18,7 @@
             <td class="align-middle">CANTIDAD</td>
             <td class="align-middle">PRECIO</td>
             <td class="align-middle">SUBTOTAL</td>
-            <td class="align-middle">TOTAL</td>
-            <td class="align-middle">OPCION</td>
+            <td class="align-middle">ARCHIVO</td>
         </tr>
         </thead>
         <tbody>
@@ -79,7 +80,7 @@
                 {#                            <tbody>#}
                 {% for d in o.orderdetail_set.all %}
                     {% if not forloop.first %}
-                        <tr>
+                        <tr class="text-center small">
                     {% endif %}
                 {#                                <tr>#}
                 <td class="align-middle p-1 text-center">{{ forloop.counter }}</td>
@@ -102,6 +103,21 @@
                 <td class="align-middle p-1 text-right">{{ d.quantity|safe }}</td>
                 <td class="align-middle p-1 text-right">{{ d.price|safe }}</td>
                 <td class="align-middle p-1 text-right">{{ d.amount|safe }}</td>
+                <td class="align-middle p-1 text-right">
+                    {% if d.type == 'O' %}
+                        <button type="button" class="btn btn-sm btn-outline-warning" onclick="Ticket({{ o.id }})"><i
+                                class="fa fa-cloud-download-alt"></i> Ticket Habitacion
+                        </button>
+                    {% elif d.type == 'X' %}
+
+                        <button type="button" class="btn btn-sm btn-outline-warning" onclick="TicketRefund({{ o.id }})">
+                            <i
+                                    class="fa fa-cloud-download-alt"></i> Ticket Reintegro
+                        </button>
+                    {% else %}
+                        -
+                    {% endif %}
+                </td>
                 </tr>
                 {% endfor %}
             {#                            </tbody>#}
@@ -117,7 +133,7 @@
             {#                    {% endif %}#}
             {#            </td>#}
 
-{#            </tr>#}
+            {#            </tr>#}
         {% endfor %}
         </tbody>
     </table>

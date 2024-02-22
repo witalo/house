@@ -489,9 +489,12 @@ function SendOrder(object) {
     }
 }
 
-$(document).on('click', 'button#close-ticket', function () {
+// $(document).on('click', 'button#close-ticket', function () {
+//     window.location.href = "/orders/order/";
+// })
+function CloseRoom() {
     window.location.href = "/orders/order/";
-})
+}
 
 function AddNewRow(p) {
     $.ajax({
@@ -999,27 +1002,33 @@ function debounce(fn, threshold) {
 
 function FinishOrder(o) {
     if (parseInt(o) > 0) {
-        let r = confirm('¿Esta seguro de finalizar la orden?, una vez aceptado se liberara la habitacion');
-        if (r === true) {
-            $.ajax({
-                url: '/orders/finish_order/',
-                dataType: 'json',
-                type: 'POST',
-                data: {'order': o},
-                success: function (response) {
-                    if (response.success) {
-                        toastr.success(response.message)
-                        $('#btn-close').trigger('click')
-                    } else {
-                        toastr.error(response.message)
+        let total = $('#total').val()
+        let total_payment = $('#total-payment').val()
+        if (parseFloat(total) === parseFloat(total_payment)) {
+            let r = confirm('¿Esta seguro de finalizar la orden?, una vez aceptado se liberara la habitacion');
+            if (r === true) {
+                $.ajax({
+                    url: '/orders/finish_order/',
+                    dataType: 'json',
+                    type: 'POST',
+                    data: {'order': o},
+                    success: function (response) {
+                        if (response.success) {
+                            toastr.success(response.message)
+                            CloseRoom()
+                        } else {
+                            toastr.error(response.message)
+                        }
+                    },
+                    error: function (jqXhr, textStatus, xhr) {
+                        if (jqXhr.status === 500) {
+                            toastr.error(jqXhr.responseJSON.error);
+                        }
                     }
-                },
-                error: function (jqXhr, textStatus, xhr) {
-                    if (jqXhr.status === 500) {
-                        toastr.error(jqXhr.responseJSON.error);
-                    }
-                }
-            });
+                });
+            }
+        } else {
+            toastr.warning('Es necesario registrar los pagos completamente')
         }
     } else {
         toastr.warning('Necesita registrar la orden antes de finalizarlo')

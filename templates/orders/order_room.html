@@ -598,7 +598,7 @@
             <div class="modal-content">
                 <div class="modal-header bg-primary p-2">
                     <h6 class="modal-title">TICKET</h6>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="CloseRoom()">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
@@ -606,7 +606,7 @@
                     <iframe src="" width="100%" height="680px" id="pdfFrame"></iframe>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" id="close-ticket" class="btn btn-secondary" data-dismiss="modal">Cerrar
+                    <button type="button" id="close-ticket" onclick="CloseRoom()" class="btn btn-secondary" data-dismiss="modal">Cerrar
                     </button>
                 </div>
             </div>

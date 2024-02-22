@@ -43,10 +43,11 @@
     <!-- Bootstrap Color Picker -->
     <link rel="stylesheet" href="{% static 'admin/plugins/bootstrap-colorpicker/css/bootstrap-colorpicker.min.css' %}">
     <link rel="stylesheet" href="{% static 'admin/dist/css/style.css' %}">
-   <link rel="preconnect" href="https://fonts.googleapis.com">
-   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-   <link href="https://fonts.googleapis.com/css2?family=Oswald&display=swap" rel="stylesheet">
-   <link href="https://fonts.googleapis.com/css2?family=Bungee&family=Bungee+Spice&family=Contrail+One&family=Oswald&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Oswald&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Bungee&family=Bungee+Spice&family=Contrail+One&family=Oswald&display=swap"
+          rel="stylesheet">
 </head>
 <body class="sidebar-collapse hold-transition sidebar-mini layout-fixed oswald">
 <div class="wrapper">
@@ -63,12 +64,16 @@
             <li class="nav-item">
                 <a class="nav-link" data-widget="pushmenu" href="#" role="button"><i class="fas fa-bars"></i></a>
             </li>
-            <li class="nav-item d-none d-sm-inline-block">
-                <a href="{% url 'orders:order' %}" class="nav-link">Habitaciones</a>
-            </li>
-            <li class="nav-item d-none d-sm-inline-block">
-                <a href="{% url 'orders:purchase' %}" class="nav-link">Compras</a>
-            </li>
+            {% if perms.orders.add_order %}
+                <li class="nav-item d-none d-sm-inline-block">
+                    <a href="{% url 'orders:order' %}" class="nav-link">Habitaciones</a>
+                </li>
+            {% endif %}
+            {% if perms.orders.change_order %}
+                <li class="nav-item d-none d-sm-inline-block">
+                    <a href="{% url 'orders:purchase' %}" class="nav-link">Compras</a>
+                </li>
+            {% endif %}
         </ul>
 
         <!-- Right navbar links -->
@@ -200,7 +205,7 @@
                     <div class="dropdown-divider"></div>
                     <a href="#" class="dropdown-item text-capitalize">
                         <i class="fas fa-business-time mr-2"></i>{% if user.subsidiary.name %}
-                        {{ user.subsidiary.name }}{% else %}Sucursal{% endif %}
+                        {{ user.subsidiary.name }}{% else %}Sede{% endif %}
                         <span class="float-right text-muted text-sm">AQP</span>
                     </a>
                     <div class="dropdown-divider"></div>
@@ -233,22 +238,6 @@
             <div class="user-panel mt-3 pb-3 mb-3 d-flex">
                 <div class="image">
                     <img src="
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -296,24 +285,30 @@
                                     <p>Inicio</p>
                                 </a>
                             </li>
-                            <li class="nav-item">
-                                <a href="{% url 'orders:order' %}" class="nav-link">
-                                    <i class="far fa-circle nav-icon"></i>
-                                    <p>Orden</p>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="{% url 'orders:purchase' %}" class="nav-link">
-                                    <i class="far fa-circle nav-icon"></i>
-                                    <p>Comprar</p>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="{% url 'orders:orders' %}" class="nav-link">
-                                    <i class="far fa-circle nav-icon"></i>
-                                    <p>Reporte ordenes</p>
-                                </a>
-                            </li>
+                            {% if perms.orders.add_order %}
+                                <li class="nav-item">
+                                    <a href="{% url 'orders:order' %}" class="nav-link">
+                                        <i class="far fa-circle nav-icon"></i>
+                                        <p>Orden</p>
+                                    </a>
+                                </li>
+                            {% endif %}
+                            {% if perms.orders.change_order %}
+                                <li class="nav-item">
+                                    <a href="{% url 'orders:purchase' %}" class="nav-link">
+                                        <i class="far fa-circle nav-icon"></i>
+                                        <p>Comprar</p>
+                                    </a>
+                                </li>
+                            {% endif %}
+                            {% if perms.orders.view_order %}
+                                <li class="nav-item">
+                                    <a href="{% url 'orders:orders' %}" class="nav-link">
+                                        <i class="far fa-circle nav-icon"></i>
+                                        <p>Reporte ordenes</p>
+                                    </a>
+                                </li>
+                            {% endif %}
                         </ul>
                     </li>
                     <li class="nav-item">
@@ -325,12 +320,14 @@
                             </p>
                         </a>
                         <ul class="nav nav-treeview">
-                            <li class="nav-item">
-                                <a href="{% url 'accounts:account' %}" class="nav-link">
-                                    <i class="far fa-circle nav-icon"></i>
-                                    <p>Caja</p>
-                                </a>
-                            </li>
+                            {% if perms.accounts.view_account %}
+                                <li class="nav-item">
+                                    <a href="{% url 'accounts:account' %}" class="nav-link">
+                                        <i class="far fa-circle nav-icon"></i>
+                                        <p>Caja</p>
+                                    </a>
+                                </li>
+                            {% endif %}
                         </ul>
                     </li>
                     <li class="nav-item">
@@ -342,18 +339,22 @@
                             </p>
                         </a>
                         <ul class="nav nav-treeview">
-                            <li class="nav-item">
-                                <a href="{% url 'clients:client' %}" class="nav-link">
-                                    <i class="far fa-circle nav-icon"></i>
-                                    <p>Clientes</p>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="{% url 'providers:provider' %}" class="nav-link">
-                                    <i class="far fa-circle nav-icon"></i>
-                                    <p>Proveedores</p>
-                                </a>
-                            </li>
+                            {% if perms.clients.view_client %}
+                                <li class="nav-item">
+                                    <a href="{% url 'clients:client' %}" class="nav-link">
+                                        <i class="far fa-circle nav-icon"></i>
+                                        <p>Clientes</p>
+                                    </a>
+                                </li>
+                            {% endif %}
+                            {% if perms.providers.view_provider %}
+                                <li class="nav-item">
+                                    <a href="{% url 'providers:provider' %}" class="nav-link">
+                                        <i class="far fa-circle nav-icon"></i>
+                                        <p>Proveedores</p>
+                                    </a>
+                                </li>
+                            {% endif %}
                         </ul>
                     </li>
                     <li class="nav-item">
@@ -365,42 +366,54 @@
                             </p>
                         </a>
                         <ul class="nav nav-treeview">
-                            <li class="nav-item">
-                                <a href="{% url 'products:product' %}" class="nav-link">
-                                    <i class="far fa-circle nav-icon"></i>
-                                    <p>Producto</p>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="{% url 'products:brand' %}" class="nav-link">
-                                    <i class="far fa-circle nav-icon"></i>
-                                    <p>Marca Producto</p>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="{% url 'rooms:roomgroup' %}" class="nav-link">
-                                    <i class="far fa-circle nav-icon"></i>
-                                    <p>Pisos Habitacion</p>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="{% url 'rooms:roomtype' %}" class="nav-link">
-                                    <i class="far fa-circle nav-icon"></i>
-                                    <p>Tipo Habitacion</p>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="{% url 'rooms:roomstate' %}" class="nav-link">
-                                    <i class="far fa-circle nav-icon"></i>
-                                    <p>Estado Habitacion</p>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="{% url 'rooms:room' %}" class="nav-link">
-                                    <i class="far fa-circle nav-icon"></i>
-                                    <p>Habitacion</p>
-                                </a>
-                            </li>
+                            {% if perms.providers.view_provider %}
+                                <li class="nav-item">
+                                    <a href="{% url 'products:product' %}" class="nav-link">
+                                        <i class="far fa-circle nav-icon"></i>
+                                        <p>Producto</p>
+                                    </a>
+                                </li>
+                            {% endif %}
+                            {% if perms.products.view_productbrand %}
+                                <li class="nav-item">
+                                    <a href="{% url 'products:brand' %}" class="nav-link">
+                                        <i class="far fa-circle nav-icon"></i>
+                                        <p>Marca Producto</p>
+                                    </a>
+                                </li>
+                            {% endif %}
+                            {% if perms.rooms.view_roomgroup %}
+                                <li class="nav-item">
+                                    <a href="{% url 'rooms:roomgroup' %}" class="nav-link">
+                                        <i class="far fa-circle nav-icon"></i>
+                                        <p>Pisos Habitacion</p>
+                                    </a>
+                                </li>
+                            {% endif %}
+                            {% if perms.rooms.view_roomtype %}
+                                <li class="nav-item">
+                                    <a href="{% url 'rooms:roomtype' %}" class="nav-link">
+                                        <i class="far fa-circle nav-icon"></i>
+                                        <p>Tipo Habitacion</p>
+                                    </a>
+                                </li>
+                            {% endif %}
+                            {% if perms.rooms.view_roomsstate %}
+                                <li class="nav-item">
+                                    <a href="{% url 'rooms:roomstate' %}" class="nav-link">
+                                        <i class="far fa-circle nav-icon"></i>
+                                        <p>Estado Habitacion</p>
+                                    </a>
+                                </li>
+                            {% endif %}
+                            {% if perms.rooms.view_room %}
+                                <li class="nav-item">
+                                    <a href="{% url 'rooms:room' %}" class="nav-link">
+                                        <i class="far fa-circle nav-icon"></i>
+                                        <p>Habitacion</p>
+                                    </a>
+                                </li>
+                            {% endif %}
                         </ul>
                     </li>
                     <li class="nav-item">
@@ -412,18 +425,22 @@
                             </p>
                         </a>
                         <ul class="nav nav-treeview">
-                            <li class="nav-item">
-                                <a href="{% url 'subsidiaries:subsidiary' %}" class="nav-link">
-                                    <i class="far fa-circle nav-icon"></i>
-                                    <p>Filiales</p>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="{% url 'users:user' %}" class="nav-link">
-                                    <i class="far fa-circle nav-icon"></i>
-                                    <p>Usuarios</p>
-                                </a>
-                            </li>
+                            {% if perms.subsidiaries.view_subsidiary %}
+                                <li class="nav-item">
+                                    <a href="{% url 'subsidiaries:subsidiary' %}" class="nav-link">
+                                        <i class="far fa-circle nav-icon"></i>
+                                        <p>Filiales</p>
+                                    </a>
+                                </li>
+                            {% endif %}
+                            {% if perms.users.view_user %}
+                                <li class="nav-item">
+                                    <a href="{% url 'users:user' %}" class="nav-link">
+                                        <i class="far fa-circle nav-icon"></i>
+                                        <p>Usuarios</p>
+                                    </a>
+                                </li>
+                            {% endif %}
                         </ul>
                     </li>
                 </ul>
@@ -606,7 +623,13 @@
                                     <ul class="users-list clearfix">
                                         {% for u in user_set %}
                                             <li>
-                                                <img src="{% if u.avatar %}{{ u.avatar }}{% else %}{% static 'admin/dist/img/user2-160x160.jpg' %}{% endif %}"
+                                                <img src="
+
+
+
+
+
+                                                        {% if u.avatar %}{{ u.avatar }}{% else %}{% static 'admin/dist/img/user2-160x160.jpg' %}{% endif %}"
                                                      alt="User Image">
                                                 <a class="users-list-name"
                                                    href="#">{{ u.first_name }} {{ u.last_name }}</a>

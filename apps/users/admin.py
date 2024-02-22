@@ -14,7 +14,7 @@ class UserAdmin(BaseUserAdmin):
         (_('Personal info'), {'fields': (
             'document', 'first_name', 'last_name', 'email', 'phone', 'avatar', 'subsidiary')}),
         (_('Permissions'), {
-            'fields': ('is_active', 'is_staff', 'is_superuser', 'rooms', 'user_permissions'), }),
+            'fields': ('is_active', 'is_staff', 'is_superuser', 'user_permissions'), }),
 
         (_('Important dates'), {'fields': ('last_login', 'date_joined')}),)
     readonly_fields = ['date_joined', 'last_login']

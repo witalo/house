@@ -86,26 +86,29 @@ WSGI_APPLICATION = 'house.wsgi.application'
 #         'NAME': BASE_DIR / 'db.sqlite3',
 #     }
 # }
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.postgresql',
-#         'NAME': 'railway',
-#         'USER': 'postgres',
-#         'PASSWORD': 'f1gBFc2c*2-g*44a434bA3fCgfde6Cd1',
-#         'HOST': 'roundhouse.proxy.rlwy.net',
-#         'PORT': 41231,
-#     }
-# }
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'hotel',
+        'NAME': 'railway',
         'USER': 'postgres',
-        'PASSWORD': 'gigolo',
-        'HOST': '127.0.0.1',
-        'PORT': 5432,
+        # 'PASSWORD': 'f1gBFc2c*2-g*44a434bA3fCgfde6Cd1',
+        'PASSWORD': 'AdF3E6-1DDd2AFaF3d3DE3f-66-EFfdd',
+        # 'HOST': 'roundhouse.proxy.rlwy.net',
+        'HOST': 'viaduct.proxy.rlwy.net',
+        # 'PORT': 41231,
+        'PORT': 49257,
     }
 }
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'NAME': 'house',
+#         'USER': 'postgres',
+#         'PASSWORD': 'italo',
+#         'HOST': '127.0.0.1',
+#         'PORT': 5432,
+#     }
+# }
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
 

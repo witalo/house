@@ -835,7 +835,7 @@ function AddNewPayment() {
         if ((parseFloat(total_payment) + parseFloat(amount)) <= parseFloat(total)) {
             AddPayment(0, 0, account, name, amount, code, fechaHoraFormateada)
             $('#amount').val('')
-            $('#account').val('')
+            $('#account').val('0')
             $('#code').val('')
         } else {
             toastr.info('No puede realizar pagos que superen el monto total')
@@ -929,26 +929,40 @@ function TotalDetailPayment() {
     $('#total-payment').val(parseFloat(total).toFixed(2))
 };
 $("select#account").on("keyup change", function (e) {
-    let val = $(this).val();
-    $(this).attr('pk', val)
+     let val = $(this).val();
     if (parseInt(val) > 0) {
-        let total = $('#total').val()
-        if (parseFloat(total) >= 0) {
-            total = parseFloat(total)
-        } else {
-            total = parseFloat("0.00")
-        }
-        let total_payment = $('#total-payment').val()
-        if (parseFloat(total_payment) >= 0) {
-            total_payment = parseFloat(total_payment)
-        } else {
-            total_payment = parseFloat("0.00")
-        }
-        let amount = parseFloat(total) - parseFloat(total_payment)
-        $('#amount').val(parseFloat(amount).toFixed(2))
+        ValidateAccount(val).then(function (r) {
+            // Hacer algo con los datos obtenidos
+            if (r) {
+                $(this).attr('pk', val)
+                let total = $('#total').val()
+                if (parseFloat(total) >= 0) {
+                    total = parseFloat(total).toFixed(2)
+                } else {
+                    total = parseFloat("0.00").toFixed(2)
+                }
+                let total_payment = $('#total-payment').val()
+                if (parseFloat(total_payment) >= 0) {
+                    total_payment = parseFloat(total_payment).toFixed(2)
+                } else {
+                    total_payment = parseFloat("0.00").toFixed(2)
+                }
+                let amount = parseFloat(total) - parseFloat(total_payment)
+                $('#amount').val(parseFloat(amount).toFixed(2))
+            } else {
+                $('#account').val("0")
+                $('#amount').val('')
+                $('#code').val('')
+            }
+        }).catch(function (error) {
+            // Manejar errores
+            console.error(error);
+        });
     } else {
         $('#amount').val('')
+        $('#code').val('')
     }
+
 })
 // $("#room_state").on("keyup change", function (e) {
 //     let val = $(this).val();
@@ -1033,4 +1047,29 @@ function FinishOrder(o) {
     } else {
         toastr.warning('Necesita registrar la orden antes de finalizarlo')
     }
+}
+
+function ValidateAccount(a) {
+    return new Promise(function (resolve, reject) {
+        // Realize la solicitud Ajax
+        $.ajax({
+            url: '/accounts/validate_account/',
+            dataType: 'json',
+            type: 'GET',
+            data: {'pk': a},
+            success: function (response) {
+                if (response.success) {
+                    toastr.success(response.message);
+                    resolve(true);
+                } else {
+                    toastr.error(response.message)
+                    resolve(false);
+                }
+            },
+            fail: function (response) {
+                toastr.error('Ocurrio un problema en el proceso')
+                reject(false);
+            }
+        });
+    });
 }

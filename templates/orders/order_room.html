@@ -354,7 +354,7 @@
                                     <div class="form-group mb-0">
                                         <label for="account" class="mb-0">Caja/cuenta</label>
                                         <select class="form-control form-control-sm" id="account" name="account" pk="">
-                                            <option value="">SELECCIONE</option>
+                                            <option value="0">SELECCIONE</option>
                                             {% for a in account_set %}
                                                 <option value="{{ a.id }}">{{ a.name }}</option>
                                             {% endfor %}

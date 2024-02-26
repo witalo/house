@@ -92,8 +92,7 @@ async function AddRowDetail(i, pk, product, code, name, q, p, s, k) {
         '</div>' +
         '</div>' +
         '</td>' +
-        '<td class="mailbox-subject align-middle item-name" description="' + name + '">' +
-        '<b>' + 'Codigo:' + code + '</b>' + ' ' + 'Descripción:' + name + '</td>' +
+        '<td class="mailbox-subject align-middle item-name" description="' + name + '">' +name + '</td>' +
         '<td class="mailbox-attachment align-middle item-price">' + '<input type="number" step="0.01" min="0.00" placeholder="0.00" class="form-control form-control-sm input-price text-right w-100" value="' + price + '" style="width: 85px;"/>' + '</td>' +
         '<td class="align-middle mailbox-date item-amount p-1 text-right">' + amount + '</td>' +
         '<td class="align-middle p-1 text-center item-delete">' +
@@ -261,13 +260,13 @@ $(document).on('click', 'tbody#order_detail tr td.item-quantity div.input-group 
 })
 
 function AddRowOther() {
-    var product = prompt('Descripcion de la Compra/Entrada?', '');
+    var product = prompt('DESCRIPCION DE LA COMPRA/ENTRADA?', '');
     if (product && product.trim() !== "") {
         // if ($("tbody#order_detail tr[product=" + 0 + " ]").length > 0) {
         //     toastr.info('El detalle ya se encuentra añadido')
         //     return false
         // } else {
-        AddRowDetail(0, 0, 0, '-', product, 1, 0, 0, 1)
+        AddRowDetail(0, 0, 0, '-', product.toUpperCase(), 1, 0, 0, 1)
         // }
     }
 }
@@ -406,7 +405,7 @@ function AddNewPayment() {
         if ((parseFloat(total_payment) + parseFloat(amount)) <= parseFloat(total)) {
             AddPayment(0, 0, account, name, amount, code, fechaHoraFormateada)
             $('#amount').val('')
-            $('#account').val('')
+            $('#account').val('0')
             $('#code').val('')
         } else {
             toastr.info('No puede realizar pagos que superen el monto total')
@@ -466,25 +465,39 @@ function TotalDetailPayment() {
 };
 $("select#account").on("keyup change", function (e) {
     let val = $(this).val();
-    $(this).attr('pk', val)
     if (parseInt(val) > 0) {
-        let total = $('#total').val()
-        if (parseFloat(total) >= 0) {
-            total = parseFloat(total).toFixed(2)
-        } else {
-            total = parseFloat("0.00").toFixed(2)
-        }
-        let total_payment = $('#total-payment').val()
-        if (parseFloat(total_payment) >= 0) {
-            total_payment = parseFloat(total_payment).toFixed(2)
-        } else {
-            total_payment = parseFloat("0.00").toFixed(2)
-        }
-        let amount = parseFloat(total) - parseFloat(total_payment)
-        $('#amount').val(parseFloat(amount).toFixed(2))
+        ValidateAccount(val).then(function (r) {
+            // Hacer algo con los datos obtenidos
+            if (r) {
+                $(this).attr('pk', val)
+                let total = $('#total').val()
+                if (parseFloat(total) >= 0) {
+                    total = parseFloat(total).toFixed(2)
+                } else {
+                    total = parseFloat("0.00").toFixed(2)
+                }
+                let total_payment = $('#total-payment').val()
+                if (parseFloat(total_payment) >= 0) {
+                    total_payment = parseFloat(total_payment).toFixed(2)
+                } else {
+                    total_payment = parseFloat("0.00").toFixed(2)
+                }
+                let amount = parseFloat(total) - parseFloat(total_payment)
+                $('#amount').val(parseFloat(amount).toFixed(2))
+            } else {
+                $('#account').val("0")
+                $('#amount').val('')
+                $('#code').val('')
+            }
+        }).catch(function (error) {
+            // Manejar errores
+            console.error(error);
+        });
     } else {
         $('#amount').val('')
+        $('#code').val('')
     }
+
 })
 
 function DeleteRowPayment(i, pk, account) {
@@ -653,7 +666,7 @@ function SendOrder(object) {
                     toastr.success(response.message)
                     setTimeout(function () {
                         location.reload();
-                    }, 5000);
+                    }, 1000);
                 } else {
                     toastr.error(response.message)
                 }
@@ -665,4 +678,29 @@ function SendOrder(object) {
             }
         });
     }
+}
+
+function ValidateAccount(a) {
+    return new Promise(function (resolve, reject) {
+        // Realize la solicitud Ajax
+        $.ajax({
+            url: '/accounts/validate_account/',
+            dataType: 'json',
+            type: 'GET',
+            data: {'pk': a},
+            success: function (response) {
+                if (response.success) {
+                    toastr.success(response.message);
+                    resolve(true);
+                } else {
+                    toastr.error(response.message)
+                    resolve(false);
+                }
+            },
+            fail: function (response) {
+                toastr.error('Ocurrio un problema en el proceso')
+                reject(false);
+            }
+        });
+    });
 }

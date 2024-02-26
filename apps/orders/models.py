@@ -43,7 +43,7 @@ class Order(models.Model):
 
     def get_expired(self):
         if self.status == 'P' and self.type == 'S' and self.room:
-            detail_set = OrderDetail.objects.filter(type__in=['O', 'X'])
+            detail_set = OrderDetail.objects.filter(type__in=['O', 'X'], order=self)
             if detail_set.exists():
                 final_date = timezone.localtime(self.date_time, timezone=desired_timezone)
                 # Obtener la fecha y hora actual con la zona horaria deseada
@@ -61,6 +61,18 @@ class Order(models.Model):
                 return False
         else:
             return False
+
+    def get_time(self):
+        if self.status == 'P' and self.type == 'S' and self.room:
+            init_date = timezone.localtime(self.date_time, timezone=desired_timezone)
+            date_time = datetime.now(desired_timezone)
+            times = date_time - init_date
+            days = times.days
+            hours, seconds = divmod(times.seconds, 3600)
+            minutes, _ = divmod(seconds, 60)
+            return '{}:Diás {}:Horas {}:Minutos'.format(days, hours, minutes)
+        else:
+            return '{}:Diás {}:Horas {}:Minutos'.format(0, 0, 0)
 
     def save(self, *args, **kwargs):
         # Llamamos al método save() original para guardar el objeto Order

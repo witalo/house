@@ -10,10 +10,10 @@ function SearchOrders() {
             type: 'GET',
             data: {'type': type, 'init': init, 'end': end},
             success: function (r) {
-                if(r.success){
-                    toastr.success(r.message)
+                if (r.success) {
+                    // toastr.success(r.message)
                     $('div#orders-grid').empty().html(r.grid);
-                }else{
+                } else {
                     toastr.info(r.message)
                 }
 

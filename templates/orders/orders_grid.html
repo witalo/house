@@ -59,20 +59,24 @@
                 <td class="align-middle p-1 text-right font-weight-bold" rowspan="{{ o.orderdetail_set.count }}"><span
                         class="float-left">S/.</span> {{ o.total|safe }}</td>
                 <td class="align-middle p-1" rowspan="{{ o.orderdetail_set.count }}">
-                    <div class="btn-group">
-                        <button type="button" class="btn btn-success">Opcion</button>
-                        <button type="button" class="btn btn-success dropdown-toggle" data-toggle="dropdown"
-                                aria-expanded="false">
-                            <span class="sr-only">Toggle Dropdown</span>
-                        </button>
-                        <div class="dropdown-menu" role="menu" style="">
-                            <a class="dropdown-item" href="#" onclick="CancelOrder({{ o.id }})">Anular</a>
-                            {#                        <a class="dropdown-item" href="#">Another action</a>#}
-                            {#                        <a class="dropdown-item" href="#">Something else here</a>#}
-                            {#                        <div class="dropdown-divider"></div>#}
-                            {#                        <a class="dropdown-item" href="#">Separated link</a>#}
+                    {% if o.status == 'A' %}
+                        Orden Anulada
+                    {% else %}
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-success">Opcion</button>
+                            <button type="button" class="btn btn-success dropdown-toggle" data-toggle="dropdown"
+                                    aria-expanded="false">
+                                <span class="sr-only">Toggle Dropdown</span>
+                            </button>
+                            <div class="dropdown-menu" role="menu" style="">
+                                <a class="dropdown-item" href="#" onclick="CancelOrder({{ o.id }})">Anular</a>
+                                {#                        <a class="dropdown-item" href="#">Another action</a>#}
+                                {#                        <a class="dropdown-item" href="#">Something else here</a>#}
+                                {#                        <div class="dropdown-divider"></div>#}
+                                {#                        <a class="dropdown-item" href="#">Separated link</a>#}
+                            </div>
                         </div>
-                    </div>
+                    {% endif %}
                 </td>
                 {#                <td class="align-middle p-1">#}
                 {#                    {% if o.orderdetail_set %}#}

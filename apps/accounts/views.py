@@ -250,7 +250,7 @@ def get_number_payment(account=None):
                 aperture_obj = aperture_set.last()
                 n = aperture_obj.number
             else:
-                return 0
+                n = 0
         else:
             n = 0
         return int(n)
@@ -314,7 +314,7 @@ def get_payments(request):
         if pk and init and end:
             try:
                 account_obj = Account.objects.get(id=int(pk))
-                payment_set = Payments.objects.filter(date_payment__range=(init, end),account=account_obj)
+                payment_set = Payments.objects.filter(date_payment__range=(init, end), account=account_obj)
                 t = loader.get_template('accounts/payments_grid.html')
                 c = ({
                     'payment_set': payment_set

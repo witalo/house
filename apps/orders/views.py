@@ -501,7 +501,10 @@ def cancel_order(request):
             order_obj.save()
             for d in OrderDetail.objects.filter(order=order_obj):
                 if d.product:
-                    store_input(detail=d)
+                    if d.order.type == 'S':
+                        store_input(detail=d)
+                    elif d.order.type == 'E':
+                        store_output(detail=d)
             payment_set = Payments.objects.filter(order=order_obj)
             for payment in payment_set:
                 payment.status = 'A'

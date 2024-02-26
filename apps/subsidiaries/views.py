@@ -7,6 +7,7 @@ from .forms import SubsidiaryForm
 from .models import Subsidiary
 from ..orders.models import Order
 from ..products.models import Product
+from ..rooms.models import Room
 from ..users.models import User
 
 
@@ -19,7 +20,8 @@ class Home(TemplateView):
         product = Product.objects.filter(is_state=True)
         subsidiary = user_obj.subsidiary
         user = User.objects.filter(is_active=True)
-        order_set = Order.objects.filter(status='C', type='A')
+        order_set = Order.objects.filter(status='C', type='S')
+        room_set = Room.objects.filter(state__type__in=['O', 'X', 'R'])
         date = datetime.now()
         if user_id is not None:
             context = {
@@ -27,7 +29,7 @@ class Home(TemplateView):
                 'products': product.count(),
                 'orders': order_set.count(),
                 'date': date,
-                # 'user_set': user
+                'room_set': room_set
             }
             return context
         else:

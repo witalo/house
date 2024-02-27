@@ -261,12 +261,13 @@ class OrdersList(ListView):
     context_object_name = 'order_set'
 
     def get_context_data(self, **kwargs):
-        my_date = datetime.now().date()
-        order_set = Order.objects.filter(current__range=(my_date, my_date), type='A')
+        my_date = datetime.now()
+        dates = my_date.strftime("%Y-%m-%d")
+        order_set = Order.objects.filter(current__range=(dates, dates), type='E')
         context = {
             'order_set': order_set,
             'type_set': Order._meta.get_field('type').choices,
-            'date': my_date.strftime("%Y-%m-%d")
+            'date': dates
         }
         return context
 

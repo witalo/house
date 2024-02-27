@@ -6,9 +6,9 @@ __pycache__
 
 # Backup files #
 *.bak
-#house/settings.py
-#static
+house/settings.py
+static
 migrations
 .idea
-#media
-#requirements.txt
+media
+requirements.txt

@@ -47,7 +47,7 @@ def modal_orders(request):
         pk = request.GET.get('pk', '')
         if pk:
             try:
-                my_date = datetime.now()
+                my_date = timezone.localtime(timezone.now(), timezone=desired_timezone)
                 room_obj = Room.objects.get(id=int(pk))
                 t = loader.get_template('orders/order_modal.html')
                 c = ({
@@ -231,8 +231,7 @@ def create_order(request):
 
 def order_room(request, pk):
     if request.method == 'GET':
-        my_date = datetime.now()
-        print("Fecha:", my_date)
+        my_date = timezone.localtime(timezone.now(), timezone=desired_timezone)
         user = request.user.id
         user_obj = User.objects.get(id=int(user))
         subsidiary_obj = user_obj.subsidiary
@@ -311,9 +310,9 @@ def get_orders(request):
 
 def get_orders_month(request):
     if request.method == 'GET':
-        date_ = datetime.now()
-        year = date_.year
-        month = date_.month
+        my_date = timezone.localtime(timezone.now(), timezone=desired_timezone)
+        year = my_date.year
+        month = my_date.month
         user_id = request.user.id
         user_obj = User.objects.get(id=user_id)
         subsidiary_obj = user_obj.subsidiary
@@ -340,9 +339,9 @@ def get_orders_month(request):
 
 def get_room_week(request):
     if request.method == 'GET':
-        date_ = datetime.now()
-        week = date_.weekday()
-        init = date_ - timedelta(days=int(week))
+        my_date = timezone.localtime(timezone.now(), timezone=desired_timezone)
+        week = my_date.weekday()
+        init = my_date - timedelta(days=int(week))
         user_id = request.user.id
         user_obj = User.objects.get(id=user_id)
         subsidiary_obj = user_obj.subsidiary
@@ -401,6 +400,7 @@ def create_purchase(request):
         user_obj = User.objects.get(id=user)
         subsidiary_obj = user_obj.subsidiary
         types = order['type']
+        my_date = timezone.localtime(timezone.now(), timezone=desired_timezone)
         pk = order['order']
         if int(pk) > 0:
             pk = int(pk)
@@ -412,7 +412,7 @@ def create_purchase(request):
                 "type": types,
                 "number": get_correlative(subsidiary=subsidiary_obj, types=types),
                 "current": date,
-                "date_time": datetime.now(),
+                "date_time": my_date,
                 "user": user_obj,
                 "client": client_obj,
                 "subsidiary": subsidiary_obj,

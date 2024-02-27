@@ -15,7 +15,9 @@ from datetime import date, datetime
 from apps.accounts.forms import AccountForm
 from apps.accounts.models import Account, Payments
 from apps.users.models import User
-
+import pytz
+from django.utils import timezone
+desired_timezone = pytz.timezone('America/Lima')
 
 class AccountList(ListView):
     model = Account
@@ -82,7 +84,7 @@ def get_open_account(request):
         pk = request.GET.get('pk', '')
         if pk:
             account_obj = Account.objects.get(id=int(pk))
-            my_date = datetime.now()
+            my_date = timezone.localtime(timezone.now(), timezone=desired_timezone)
             date_now = my_date.strftime("%Y-%m-%d")
             tpl = loader.get_template('accounts/account_open.html')
             context = ({
@@ -184,8 +186,8 @@ def get_close_account(request):
         pk = request.GET.get('pk', '')
         if pk:
             account_obj = Account.objects.get(id=int(pk))
-            dates = datetime.now()
-            date_now = dates.strftime("%Y-%m-%d")
+            my_date = timezone.localtime(timezone.now(), timezone=desired_timezone)
+            date_now = my_date.strftime("%Y-%m-%d")
             tpl = loader.get_template('accounts/account_close.html')
             context = ({
                 'date_now': date_now,
@@ -288,7 +290,7 @@ def modal_payments(request):
         pk = request.GET.get('pk', '')
         if pk:
             account_obj = Account.objects.get(id=int(pk))
-            my_date = datetime.now()
+            my_date = timezone.localtime(timezone.now(), timezone=desired_timezone)
             date_now = my_date.strftime("%Y-%m-%d")
             tpl = loader.get_template('accounts/payments.html')
             context = ({

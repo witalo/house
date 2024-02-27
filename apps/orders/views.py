@@ -263,6 +263,7 @@ class OrdersList(ListView):
 
     def get_context_data(self, **kwargs):
         my_date = timezone.localtime(timezone.now(), timezone=desired_timezone)
+        print(my_date)
         dates = my_date.strftime("%Y-%m-%d")
         order_set = Order.objects.filter(current__range=(dates, dates), type='E')
         context = {

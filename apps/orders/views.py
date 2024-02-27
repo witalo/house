@@ -262,7 +262,7 @@ class OrdersList(ListView):
     context_object_name = 'order_set'
 
     def get_context_data(self, **kwargs):
-        my_date = timezone.localtime(datetime.now(), timezone=desired_timezone)
+        my_date = timezone.localtime(timezone.now(), timezone=desired_timezone)
         dates = my_date.strftime("%Y-%m-%d")
         order_set = Order.objects.filter(current__range=(dates, dates), type='E')
         context = {
@@ -369,7 +369,7 @@ class ListPurchase(ListView):
     model = Order
     template_name = 'orders/purchase.html'
     context_object_name = 'order_set'
-    my_date = timezone.localtime(datetime.now(), timezone=desired_timezone)
+    my_date = timezone.localtime(timezone.now(), timezone=desired_timezone)
     dates = my_date.strftime("%Y-%m-%d")
 
     def get_queryset(self):

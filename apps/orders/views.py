@@ -10,9 +10,10 @@ from django.shortcuts import render, redirect
 # Create your views here.
 from django.template import loader
 from django.urls import reverse_lazy
+from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import ListView
-
+import pytz
 from apps.accounts.models import Account, Payments
 from apps.accounts.views import create_payment
 from apps.clients.models import Client
@@ -21,8 +22,8 @@ from apps.products.models import Product, ProductStore
 from apps.products.views import store_output, store_input, update_store_output
 from apps.rooms.models import RoomGroup, RoomType, Room, RoomState
 from apps.users.models import User
-from house import settings
-from django.utils import timezone
+
+desired_timezone = pytz.timezone('America/Lima')
 
 
 class ListOrder(ListView):
@@ -261,7 +262,7 @@ class OrdersList(ListView):
     context_object_name = 'order_set'
 
     def get_context_data(self, **kwargs):
-        my_date = datetime.now()
+        my_date = timezone.localtime(datetime.now(), timezone=desired_timezone)
         dates = my_date.strftime("%Y-%m-%d")
         order_set = Order.objects.filter(current__range=(dates, dates), type='E')
         context = {
@@ -368,7 +369,8 @@ class ListPurchase(ListView):
     model = Order
     template_name = 'orders/purchase.html'
     context_object_name = 'order_set'
-    my_date = datetime.now()
+    my_date = timezone.localtime(datetime.now(), timezone=desired_timezone)
+    dates = my_date.strftime("%Y-%m-%d")
 
     def get_queryset(self):
         return Order.objects.all()
@@ -377,7 +379,7 @@ class ListPurchase(ListView):
         context = super().get_context_data(**kwargs)
         context['group_set'] = self.get_queryset()
         context['type_set'] = self.model._meta.get_field('type').choices
-        context['date_now'] = self.my_date.strftime("%Y-%m-%d")
+        context['date_now'] = self.dates
         context['account_set'] = Account.objects.all()
 
         return context

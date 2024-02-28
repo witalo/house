@@ -75,9 +75,10 @@ class Order(models.Model):
             return '{}:Diás {}:Horas {}:Minutos'.format(0, 0, 0)
 
     def save(self, *args, **kwargs):
-        # Llamamos al método save() original para guardar el objeto Order
+        if not self.pk:
+            self.create_at = timezone.localtime(timezone.now(), timezone=desired_timezone)
+        self.update_at = timezone.localtime(timezone.now(), timezone=desired_timezone)
         super().save(*args, **kwargs)
-        # Realizar la actualización del otro modelo relacionado aquí
         room_obj = self.room
         if room_obj:
             if self.status == 'C':
@@ -87,17 +88,6 @@ class Order(models.Model):
                     room_state_obj = room_state_set.first()
                     room_obj.state = room_state_obj
                     room_obj.save()
-
-    # def update(self, *args, **kwargs):
-    #     # Llamamos al método update() original para actualizar el objeto Order
-    #     super().update(*args, **kwargs)
-    #
-    #     # Realizar la actualización del otro modelo relacionado aquí
-    #     room_obj = self.room
-    #     if room_obj:
-    #         if self.status == 'C':
-    #             room_obj.state.type = 'D'
-    #             room_obj.save()
 
     class Meta:
         verbose_name = 'Orden'
@@ -131,6 +121,12 @@ class OrderDetail(models.Model):
     init = models.DateTimeField(null=True, blank=True)
     end = models.DateTimeField(null=True, blank=True)
     time = models.DurationField(null=True, blank=True)
+
+    def save(self, *args, **kwargs):
+        if not self.pk:
+            self.create_at = timezone.localtime(timezone.now(), timezone=desired_timezone)
+        self.update_at = timezone.localtime(timezone.now(), timezone=desired_timezone)
+        super().save(*args, **kwargs)
 
     def amount(self):
         amount = round(decimal.Decimal(self.quantity * self.price), 2)

@@ -2,6 +2,11 @@ import decimal
 
 from django.db import models
 from apps.users.models import User
+import pytz
+from django.utils import timezone
+
+now = timezone.now()
+desired_timezone = pytz.timezone('America/Lima')
 
 
 # Create your models here.
@@ -14,8 +19,13 @@ class Account(models.Model):
     type = models.CharField('Tipo', max_length=1, choices=TYPE_CHOICES)
     initial = models.DecimalField(max_digits=10, decimal_places=2, default='0')
     subsidiary = models.ForeignKey('subsidiaries.Subsidiary', on_delete=models.SET_NULL, null=True, blank=True)
-    create_at = models.DateTimeField(auto_now=True)
+    create_at = models.DateTimeField(auto_now_add=True)
     is_state = models.BooleanField(default=True)
+
+    def save(self, *args, **kwargs):
+        if not self.pk:
+            self.create_at = timezone.localtime(timezone.now(), timezone=desired_timezone)
+        super().save(*args, **kwargs)
 
     def get_status(self):
         status = 'C'
@@ -59,9 +69,17 @@ class Payments(models.Model):
     update_at = models.DateTimeField(auto_now=True)
     date_payment = models.DateField(null=True, blank=True)
     user = models.ForeignKey('users.User', verbose_name='Usuario', on_delete=models.CASCADE, null=True, blank=True)
-    account = models.ForeignKey('accounts.Account', verbose_name='E/B', on_delete=models.SET_NULL, null=True, blank=True)
+    account = models.ForeignKey('accounts.Account', verbose_name='E/B', on_delete=models.SET_NULL, null=True,
+                                blank=True)
     number = models.IntegerField(verbose_name='Numero', null=True, blank=True)
-    subsidiary = models.ForeignKey('subsidiaries.Subsidiary', verbose_name='Filial', on_delete=models.CASCADE, null=True, blank=True)
+    subsidiary = models.ForeignKey('subsidiaries.Subsidiary', verbose_name='Filial', on_delete=models.CASCADE,
+                                   null=True, blank=True)
+
+    def save(self, *args, **kwargs):
+        if not self.pk:
+            self.create_at = timezone.localtime(timezone.now(), timezone=desired_timezone)
+        self.update_at = timezone.localtime(timezone.now(), timezone=desired_timezone)
+        super().save(*args, **kwargs)
 
     class Meta:
         verbose_name = 'Pago'

@@ -6,6 +6,11 @@ from django.db import models
 from django.forms import model_to_dict
 
 from house import settings
+import pytz
+from django.utils import timezone
+
+now = timezone.now()
+desired_timezone = pytz.timezone('America/Lima')
 
 
 def get_file_path_product(instance, filename):
@@ -26,6 +31,12 @@ class Product(models.Model):
     update_at = models.DateTimeField(auto_now=True)
     is_priority = models.BooleanField('Prioridad', default=False)
     is_state = models.BooleanField('Estado', default=True)
+
+    def save(self, *args, **kwargs):
+        if not self.pk:
+            self.create_at = timezone.localtime(timezone.now(), timezone=desired_timezone)
+        self.update_at = timezone.localtime(timezone.now(), timezone=desired_timezone)
+        super().save(*args, **kwargs)
 
     def get_store(self, u):
         store_set = ProductStore.objects.filter(product=self, subsidiary__user=u)
@@ -73,6 +84,12 @@ class ProductStore(models.Model):
     create_at = models.DateTimeField(auto_now_add=True)
     update_at = models.DateTimeField(auto_now=True)
     quantity = models.DecimalField('Cantidad', max_digits=10, decimal_places=2, default=0)
+
+    def save(self, *args, **kwargs):
+        if not self.pk:
+            self.create_at = timezone.localtime(timezone.now(), timezone=desired_timezone)
+        self.update_at = timezone.localtime(timezone.now(), timezone=desired_timezone)
+        super().save(*args, **kwargs)
 
     def to_json(self):
         dic = model_to_dict(self)

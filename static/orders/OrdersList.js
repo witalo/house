@@ -42,6 +42,8 @@ function Ticket(o) {
                 // Cargar el PDF en el iframe del modal y mostrar el modal
                 $("#pdfFrame").attr("src", pdfUrl);
                 $("#pdfModal").modal("show");
+                const buttonHTML = '<button type="button" class="btn btn-success" onclick="DownloadRoom(\'' + o + '\')"><i class="fa fa-file-excel"></i> Descargar</button>';
+                $("#headerRoom").append(buttonHTML);
             },
             error: function (error) {
                 console.error("Error al obtener el PDF:", error);
@@ -65,8 +67,10 @@ function TicketRefund(o) {
                 const pdfUrl = link.href;
 
                 // Cargar el PDF en el iframe del modal y mostrar el modal
-                $("#pdfFrame").attr("src", pdfUrl);
-                $("#pdfModal").modal("show");
+                $("#pdfFrameRefund").attr("src", pdfUrl);
+                $("#pdfModalRefund").modal("show");
+                const buttonHTML = '<button type="button" class="btn btn-success" onclick="DownloadRefund(\'' + o + '\')"><i class="fa fa-file-excel"></i> Descargar</button>';
+                $("#headerRefund").append(buttonHTML);
             },
             error: function (error) {
                 console.error("Error al obtener el PDF:", error);
@@ -96,5 +100,17 @@ function CancelOrder(o) {
                 toastr.error('Ocurrio un problema')
             }
         });
+    }
+}
+
+function DownloadRoom(pk) {
+    if (parseInt(pk) > 0) {
+        window.open("/orders/ticket/" + pk + "/", '_blank');
+    }
+}
+
+function DownloadRefund(pk) {
+    if (parseInt(pk) > 0) {
+        window.open("/orders/ticket_refund/" + pk + "/", '_blank');
     }
 }

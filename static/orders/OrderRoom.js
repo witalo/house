@@ -714,6 +714,8 @@ function PrintOrder(o) {
                 // Cargar el PDF en el iframe del modal y mostrar el modal
                 $("#pdfFrame").attr("src", pdfUrl);
                 $("#pdfModal").modal("show");
+                const buttonHTML = '<button type="button" class="btn btn-success" onclick="DownloadRoom(\'' + o + '\')"><i class="fa fa-file-excel"></i> Descargar</button>';
+                $("#headerRoom").append(buttonHTML);
             },
             error: function (error) {
                 console.error("Error al obtener el PDF:", error);
@@ -737,8 +739,10 @@ function PrintOrderRefund(o) {
                 const pdfUrl = link.href;
 
                 // Cargar el PDF en el iframe del modal y mostrar el modal
-                $("#pdfFrame").attr("src", pdfUrl);
-                $("#pdfModal").modal("show");
+                $("#pdfFrameRefund").attr("src", pdfUrl);
+                $("#pdfModalRefund").modal("show");
+                const buttonHTML = '<button type="button" class="btn btn-success" onclick="DownloadRefund(\'' + o + '\')"><i class="fa fa-file-excel"></i> Descargar</button>';
+                $("#headerRefund").append(buttonHTML);
             },
             error: function (error) {
                 console.error("Error al obtener el PDF:", error);
@@ -929,7 +933,7 @@ function TotalDetailPayment() {
     $('#total-payment').val(parseFloat(total).toFixed(2))
 };
 $("select#account").on("keyup change", function (e) {
-     let val = $(this).val();
+    let val = $(this).val();
     if (parseInt(val) > 0) {
         ValidateAccount(val).then(function (r) {
             // Hacer algo con los datos obtenidos
@@ -1072,4 +1076,18 @@ function ValidateAccount(a) {
             }
         });
     });
+}
+
+function DownloadRoom(pk) {
+    if (parseInt(pk) > 0) {
+        window.open("/orders/ticket/" + pk + "/", '_blank');
+        CloseRoom()
+    }
+}
+
+function DownloadRefund(pk) {
+    if (parseInt(pk) > 0) {
+        window.open("/orders/ticket_refund/" + pk + "/", '_blank');
+        CloseRoom()
+    }
 }

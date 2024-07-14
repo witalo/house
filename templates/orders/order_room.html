@@ -570,11 +570,7 @@
                                     <h3 class="card-title text-uppercase font-weight-bold"><i></i>{{ p.name }}</h3>
                                 </div>
                                 <div class="card-body text-center p-1">
-                                    <img src="
-
-
-
-                                            {% if p.image %}{{ MEDIA_URL }}{{ p.image }}{% else %} {% static 'admin/images/product.jpeg' %}{% endif %}"
+                                    <img src="{% if p.image %}{{ MEDIA_URL }}{{ p.image }}{% else %} {% static 'admin/images/product.jpeg' %}{% endif %}"
                                          class="img-circle img-fluid" width="160" height="160" alt="Imagen">
 
                                 </div>
@@ -658,7 +654,7 @@
                     </div>
                 </div>
                 <div class="modal-footer justify-content-between">
-                    <button type="button" class="btn btn-default" id="btn-close-refund" onclick="CloseRoom()" data-dismiss="modal">Cerrar
+                    <button type="button" class="btn btn-default" id="btn-close-refund" data-dismiss="modal">Cerrar
                     </button>
                     <button type="button" class="btn btn-primary" onclick="AddRoomRefundTime()">Agregar reintegro
                     </button>

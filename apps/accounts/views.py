@@ -267,6 +267,11 @@ def create_payment(order=None, pk=None, account=None, code='', user=None, amount
             t = 'I'
         elif order.type == 'C' or order.type == 'E':
             t = 'E'
+        if pk is not None:
+            payment = Payments.objects.get(id=pk)
+            number = payment.number
+        else:
+            number = get_number_payment(account=account)
         payment_obj, created = Payments.objects.update_or_create(
             id=pk,
             defaults={
@@ -281,7 +286,7 @@ def create_payment(order=None, pk=None, account=None, code='', user=None, amount
                 "user": user,
                 "subsidiary": user.subsidiary,
                 "account": account,
-                "number": get_number_payment(account=account)
+                "number": number
             })
 
 
